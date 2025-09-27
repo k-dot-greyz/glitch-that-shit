@@ -1,4 +1,4 @@
-# Personal Glitch Censor
+# glitch-that-shit
 
 A browser extension that glitches out unwanted words, phrases, or ads with custom visual effects. 100% user-configurable, privacy-first, zenOS-inspired.
 
@@ -16,15 +16,17 @@ A browser extension that glitches out unwanted words, phrases, or ads with custo
 ## 🚀 Installation
 
 ### From Browser Extension Store
+
 1. Visit the [Chrome Web Store](# "Coming Soon") or [Firefox Add-ons](# "Coming Soon")
 2. Click "Add to Browser"
 3. Confirm installation when prompted
-4. Look for the Personal Glitch Censor icon in your browser toolbar
+4. Look for the glitch-that-shit icon in your browser toolbar
 
 ### Manual Installation (Developer Mode)
+
 1. Clone this repository:
    ```bash
-   git clone https://github.com/k-dot-greyz/Personal-Glitch-Censor.git
+   git clone https://github.com/k-dot-greyz/glitch-that-shit.git
    ```
 2. Open your browser's extension management page:
    - Chrome: `chrome://extensions/`
@@ -37,13 +39,15 @@ A browser extension that glitches out unwanted words, phrases, or ads with custo
 ## 📖 Usage
 
 ### Quick Start
-1. Click the Personal Glitch Censor icon in your browser toolbar
+
+1. Click the glitch-that-shit icon in your browser toolbar
 2. Toggle the extension ON/OFF with the main switch
 3. Add words or phrases to your filter list
 4. Choose your preferred glitch effect
 5. Browse the web with enhanced content control!
 
 ### Advanced Configuration
+
 - **Filter Lists**: Create custom lists for different websites or contexts
 - **Effect Intensity**: Adjust the strength of visual effects (subtle to extreme)
 - **Whitelist/Blacklist**: Specify which websites to include or exclude
@@ -51,6 +55,7 @@ A browser extension that glitches out unwanted words, phrases, or ads with custo
 - **Scheduled Filtering**: Set time-based rules for when filtering is active
 
 ### Supported Visual Effects
+
 - 🌊 **Glitch**: Digital distortion with RGB separation
 - 🔲 **Pixelation**: 8-bit style censoring blocks
 - 🌫️ **Blur**: Gaussian blur with adjustable intensity
@@ -60,19 +65,22 @@ A browser extension that glitches out unwanted words, phrases, or ads with custo
 - 🎭 **Custom**: Upload your own CSS animations
 
 ### Keyboard Shortcuts
-- `Ctrl+Shift+G` - Toggle extension on/off
-- `Ctrl+Shift+F` - Open quick filter dialog
-- `Ctrl+Shift+E` - Cycle through effect types
-- `Ctrl+Shift+S` - Open settings panel
+
+- Ctrl+Shift+G - Toggle extension on/off
+- Ctrl+Shift+F - Open quick filter dialog
+- Ctrl+Shift+E - Cycle through effect types
+- Ctrl+Shift+S - Open settings panel
 
 ## 🔧 Configuration
 
 Access the settings panel by:
+
 1. Right-clicking the extension icon → "Options"
-2. Using keyboard shortcut `Ctrl+Shift+S`
-3. Visiting `chrome-extension://[extension-id]/options.html`
+2. Using keyboard shortcut Ctrl+Shift+S
+3. Visiting chrome-extension://[extension-id]/options.html
 
 ### Settings Categories
+
 - **Filters**: Manage word lists, regex patterns, and sensitivity levels
 - **Effects**: Customize visual styles, animations, and intensities
 - **Performance**: Adjust processing speed and resource usage
@@ -81,7 +89,7 @@ Access the settings panel by:
 
 ## 🛡️ Privacy & Security
 
-- **No Data Collection**: Personal Glitch Censor does not collect, store, or transmit any personal data
+- **No Data Collection**: glitch-that-shit does not collect, store, or transmit any personal data
 - **Local Processing**: All filtering and effects are applied locally on your device
 - **Open Source**: Full source code available for security review
 - **Minimal Permissions**: Requests only essential browser permissions
@@ -89,9 +97,10 @@ Access the settings panel by:
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
 
 ### Development Setup
+
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Install dependencies: `npm install`
@@ -107,7 +116,8 @@ This project will include an open-source license in future releases.
 
 ## 🐛 Bug Reports & Feature Requests
 
-Please use the [GitHub Issues](https://github.com/k-dot-greyz/Personal-Glitch-Censor/issues) page to:
+Please use the [GitHub Issues](../../issues) page to:
+
 - Report bugs
 - Request new features
 - Ask questions
@@ -125,13 +135,12 @@ Please use the [GitHub Issues](https://github.com/k-dot-greyz/Personal-Glitch-Ce
 
 ## 💫 Inspired by zenOS Philosophy
 
-Personal Glitch Censor embraces the zenOS principles of:
+glitch-that-shit embraces the zenOS principles of:
+
 - **Mindful Technology**: Thoughtful interaction with digital content
 - **User Agency**: You control your browsing experience
 - **Digital Minimalism**: Focus on what matters, filter out noise
 - **Privacy Respect**: Your data stays yours
 - **Calm Computing**: Peaceful, distraction-free browsing
 
----
-
-*Transform your browsing experience with Personal Glitch Censor - where you control the narrative.* ✨
+Transform your browsing experience with glitch-that-shit - where you control the narrative. ✨
