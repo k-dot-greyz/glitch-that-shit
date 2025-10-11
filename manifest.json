@@ -1,0 +1,86 @@
+{
+  "manifest_version": 3,
+  "name": "glitch-that-shit",
+  "version": "0.1.0",
+  "description": "A browser extension that glitches out unwanted words, phrases, or ads with custom visual effects",
+  "author": "k-dot-greyz",
+  
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    },
+    "default_title": "glitch-that-shit"
+  },
+  
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/content.js"],
+      "css": ["src/content/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  
+  "background": {
+    "service_worker": "src/background/background.js"
+  },
+  
+  "options_page": "src/options/options.html",
+  
+  "commands": {
+    "toggle-extension": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+G",
+        "mac": "Command+Shift+G"
+      },
+      "description": "Toggle extension on/off"
+    },
+    "quick-filter": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F",
+        "mac": "Command+Shift+F"
+      },
+      "description": "Open quick filter dialog"
+    },
+    "cycle-effects": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+E",
+        "mac": "Command+Shift+E"
+      },
+      "description": "Cycle through effect types"
+    },
+    "open-settings": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
+      },
+      "description": "Open settings panel"
+    }
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
+

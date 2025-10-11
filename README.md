@@ -22,19 +22,38 @@ A browser extension that glitches out unwanted words, phrases, or ads with custo
 3. Confirm installation when prompted
 4. Look for the glitch-that-shit icon in your browser toolbar
 
-### Manual Installation (Developer Mode)
+### For Developers (Quick Setup)
+
+**One-command setup:**
+```bash
+git clone https://github.com/k-dot-greyz/glitch-that-shit.git && cd glitch-that-shit && npm run setup && npm install
+```
+
+**Then load in your browser:**
+- **Chrome/Edge**: Navigate to `chrome://extensions/` (or `edge://extensions/`), enable "Developer mode", click "Load unpacked", select the `glitch-that-shit` directory
+- **Firefox**: Navigate to `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on", select `manifest.json`
+
+📖 **See [DEV_SETUP.md](DEV_SETUP.md) for detailed development instructions**
+
+### Manual Installation (Step-by-Step)
 
 1. Clone this repository:
    ```bash
    git clone https://github.com/k-dot-greyz/glitch-that-shit.git
+   cd glitch-that-shit
    ```
-2. Open your browser's extension management page:
+2. Run the setup script:
+   ```bash
+   npm run setup
+   npm install
+   ```
+3. Open your browser's extension management page:
    - Chrome: `chrome://extensions/`
-   - Firefox: `about:addons`
+   - Firefox: `about:debugging#/runtime/this-firefox`
    - Edge: `edge://extensions/`
-3. Enable "Developer mode" (Chrome/Edge) or "Debug Add-ons" (Firefox)
-4. Click "Load unpacked" and select the cloned directory
-5. The extension will appear in your browser toolbar
+4. Enable "Developer mode" (Chrome/Edge) or click "Load Temporary Add-on" (Firefox)
+5. Click "Load unpacked" (Chrome/Edge) and select the cloned directory, or select `manifest.json` (Firefox)
+6. The extension will appear in your browser toolbar
 
 ## 📖 Usage
 
@@ -97,22 +116,66 @@ Access the settings panel by:
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+We welcome contributions! This project follows the zenOS development philosophy with standardized workflows.
 
-### Development Setup
+### Quick Start for Contributors
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Install dependencies: `npm install`
-4. Make your changes
-5. Test locally: `npm run test`
-6. Commit changes: `git commit -m 'Add amazing feature'`
-7. Push to branch: `git push origin feature/amazing-feature`
-8. Open a Pull Request
+```bash
+# 1. Fork and clone
+git clone https://github.com/YOUR_USERNAME/glitch-that-shit.git
+cd glitch-that-shit
+
+# 2. Automated setup
+npm run setup && npm install
+
+# 3. Create feature branch
+git checkout -b feature/amazing-feature
+
+# 4. Make changes, then test
+npm test && npm run lint
+
+# 5. Commit using conventions
+git commit -m "feat: add amazing feature"
+
+# 6. Push and create PR
+git push origin feature/amazing-feature
+```
+
+### Development Resources
+
+- 📖 **[CONTRIBUTING.md](CONTRIBUTING.md)** - Full contribution guidelines
+- 🚀 **[DEV_SETUP.md](DEV_SETUP.md)** - Comprehensive development setup guide
+- 📋 **[DEV_SETUP_CHEAT_SHEET.md](DEV_SETUP_CHEAT_SHEET.md)** - Quick command reference
+- 🎯 **[GitHub Issues](../../issues)** - Bug reports and feature requests
+
+### Helpful Commands
+
+```bash
+npm run setup           # Setup dev environment
+npm test               # Run tests
+npm run lint           # Check code style
+npm run lint:fix       # Auto-fix linting issues
+npm run format         # Format code with Prettier
+npm run build          # Build extension
+npm run validate       # Validate environment
+```
+
+### Commit Convention
+
+We use conventional commits:
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `docs:` - Documentation changes
+- `style:` - Code formatting
+- `refactor:` - Code refactoring
+- `test:` - Test updates
+- `chore:` - Maintenance tasks
 
 ## 📄 License
 
-This project will include an open-source license in future releases.
+MIT License - see [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2025 k-dot-greyz (Kaspars Greizis)
 
 ## 🐛 Bug Reports & Feature Requests
 

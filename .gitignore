@@ -1,0 +1,47 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+build/
+*.zip
+*.xpi
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test coverage
+coverage/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Extension specific
+web-ext-artifacts/
+
+# Setup artifacts
+setup.log
+
