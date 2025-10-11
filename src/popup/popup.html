@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>glitch-that-shit</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1 class="title">glitch-that-shit</h1>
+      <p class="subtitle">✨ zen-inspired content filtering ✨</p>
+    </header>
+
+    <!-- Quick Toggle -->
+    <section class="section">
+      <div class="toggle-container">
+        <label class="toggle-label">
+          <input type="checkbox" id="enabledToggle" class="toggle-input">
+          <span class="toggle-slider"></span>
+          <span class="toggle-text">Extension Active</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Effect Selector -->
+    <section class="section">
+      <label class="label" for="effectType">Visual Effect</label>
+      <select id="effectType" class="select">
+        <option value="glitch">🌊 Glitch (RGB Separation)</option>
+        <option value="pixelate">🔲 Pixelate (8-bit Style)</option>
+        <option value="blur">🌫️ Blur (Gaussian)</option>
+        <option value="scramble">🎲 Scramble (Random Chars)</option>
+        <option value="rainbow">🌈 Rainbow (Color Shift)</option>
+        <option value="sparkle">✨ Sparkle (Animated)</option>
+      </select>
+    </section>
+
+    <!-- Intensity Selector -->
+    <section class="section">
+      <label class="label" for="effectIntensity">Intensity</label>
+      <select id="effectIntensity" class="select">
+        <option value="subtle">Subtle</option>
+        <option value="medium">Medium</option>
+        <option value="extreme">Extreme</option>
+      </select>
+    </section>
+
+    <!-- Quick Stats -->
+    <section class="section stats-section">
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-label">Filtered Words:</span>
+          <span class="stat-value" id="filterCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Status:</span>
+          <span class="stat-value" id="statusIndicator">Active</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="section actions-section">
+      <button id="cycleEffectBtn" class="btn btn-secondary">
+        🔄 Cycle Effect
+      </button>
+      <button id="reloadPageBtn" class="btn btn-secondary">
+        ↻ Reload Page
+      </button>
+    </section>
+
+    <!-- Footer Links -->
+    <footer class="footer">
+      <button id="openOptionsBtn" class="link-btn">⚙️ Settings</button>
+      <button id="helpBtn" class="link-btn">❓ Help</button>
+      <button id="aboutBtn" class="link-btn">ℹ️ About</button>
+    </footer>
+
+    <!-- Keyboard Shortcuts Hint -->
+    <div class="hint">
+      <small>
+        <strong>Shortcuts:</strong>
+        Ctrl+Shift+G (Toggle) • Ctrl+Shift+E (Cycle) • Ctrl+Shift+S (Settings)
+      </small>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+

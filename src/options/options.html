@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>glitch-that-shit - Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1 class="title">⚙️ glitch-that-shit Settings</h1>
+      <p class="subtitle">Configure your visual content filtering experience</p>
+    </header>
+
+    <!-- Settings Sections -->
+    <main class="main">
+      <!-- Filter Settings -->
+      <section class="section">
+        <h2 class="section-title">🔍 Filter Settings</h2>
+        
+        <div class="form-group">
+          <label class="label">
+            <input type="checkbox" id="caseSensitive" class="checkbox">
+            Case Sensitive Matching
+          </label>
+          <p class="help-text">Match words exactly as typed (case-sensitive)</p>
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="filterList">Filter Words/Phrases</label>
+          <p class="help-text">Enter words or phrases to glitch (one per line)</p>
+          <textarea 
+            id="filterList" 
+            class="textarea" 
+            rows="8" 
+            placeholder="ad&#10;sponsored&#10;advertisement&#10;promoted"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <button id="addQuickFilters" class="btn btn-secondary">
+            ➕ Add Common Ad Words
+          </button>
+        </div>
+      </section>
+
+      <!-- Effect Settings -->
+      <section class="section">
+        <h2 class="section-title">🎨 Visual Effects</h2>
+        
+        <div class="form-group">
+          <label class="label" for="effectTypeSelect">Default Effect</label>
+          <select id="effectTypeSelect" class="select">
+            <option value="glitch">🌊 Glitch (RGB Separation)</option>
+            <option value="pixelate">🔲 Pixelate (8-bit Style)</option>
+            <option value="blur">🌫️ Blur (Gaussian)</option>
+            <option value="scramble">🎲 Scramble (Random Chars)</option>
+            <option value="rainbow">🌈 Rainbow (Color Shift)</option>
+            <option value="sparkle">✨ Sparkle (Animated)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="label" for="intensitySelect">Effect Intensity</label>
+          <select id="intensitySelect" class="select">
+            <option value="subtle">Subtle</option>
+            <option value="medium">Medium</option>
+            <option value="extreme">Extreme</option>
+          </select>
+        </div>
+
+        <!-- Effect Preview -->
+        <div class="form-group">
+          <label class="label">Effect Preview</label>
+          <div class="preview-container">
+            <p class="preview-text">
+              This is a <span id="previewEffect" data-intensity="medium">glitched</span> word
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Advanced Settings -->
+      <section class="section">
+        <h2 class="section-title">⚡ Advanced</h2>
+        
+        <div class="form-group">
+          <label class="label">
+            <input type="checkbox" id="reduceMotion" class="checkbox">
+            Reduce Motion
+          </label>
+          <p class="help-text">Disable animations for better accessibility</p>
+        </div>
+
+        <div class="form-group">
+          <label class="label">
+            <input type="checkbox" id="showTooltips" class="checkbox">
+            Show Tooltips on Hover
+          </label>
+          <p class="help-text">Display original text when hovering over glitched content</p>
+        </div>
+      </section>
+
+      <!-- Data Management -->
+      <section class="section">
+        <h2 class="section-title">💾 Data Management</h2>
+        
+        <div class="button-group">
+          <button id="exportBtn" class="btn btn-secondary">
+            📤 Export Settings
+          </button>
+          <button id="importBtn" class="btn btn-secondary">
+            📥 Import Settings
+          </button>
+          <button id="resetBtn" class="btn btn-danger">
+            🔄 Reset to Defaults
+          </button>
+        </div>
+        
+        <input type="file" id="importFile" accept=".json" style="display: none;">
+      </section>
+
+      <!-- Statistics -->
+      <section class="section">
+        <h2 class="section-title">📊 Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Words Filtered</span>
+            <span class="stat-value" id="statWords">0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Active Effect</span>
+            <span class="stat-value" id="statEffect">glitch</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Extension Status</span>
+            <span class="stat-value" id="statStatus">Active</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <p class="footer-text">
+          Built with ✨ zenOS philosophy • Privacy-first • Open Source
+        </p>
+        <div class="footer-links">
+          <a href="https://github.com/k-dot-greyz/glitch-that-shit" target="_blank" class="footer-link">
+            GitHub
+          </a>
+          <a href="https://github.com/k-dot-greyz/glitch-that-shit/issues" target="_blank" class="footer-link">
+            Report Issue
+          </a>
+          <a href="https://github.com/k-dot-greyz/glitch-that-shit#readme" target="_blank" class="footer-link">
+            Documentation
+          </a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Status Toast -->
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
+
