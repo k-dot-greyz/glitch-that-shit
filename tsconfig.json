@@ -10,7 +10,7 @@
     "isolatedModules": true,
     "useDefineForClassFields": true,
     "resolveJsonModule": true,
-    "types": ["chrome"]
+    "types": ["chrome", "vitest/globals"]
   },
-  "include": ["src/**/*.ts", "vite.config.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts", "vite.config.ts", "vitest.config.ts"]
 }
