@@ -205,3 +205,53 @@ describe('storage.onChange', () => {
     expect(cb2).toHaveBeenCalledOnce();
   });
 });
+
+// ─── setProfile write serialisation (race condition regression) ───────────────
+//
+// Bug: without the write chain, two concurrent setProfile calls both read the
+// same stale profile and the second write silently overwrites the first write's
+// change (e.g. user clicks a mode button and immediately drags a slider).
+
+describe('storage.setProfile — write serialisation', () => {
+  beforeEach(() => {
+    clearStorage();
+    vi.clearAllMocks();
+  });
+
+  it('concurrent calls with different keys preserve both changes', async () => {
+    // Fire both without awaiting between them — simulate rapid UI interaction
+    const p1 = storage.setProfile({ sensoryMode: 'glitch' });
+    const p2 = storage.setProfile({ baseHue: 200 });
+    await Promise.all([p1, p2]);
+
+    const stored = storageData['zenProfile'] as ZenProfile;
+    // Without serialisation p2 overwrites sensoryMode with the stale default.
+    expect(stored.sensoryMode).toBe('glitch');
+    expect(stored.baseHue).toBe(200);
+    // All other fields must still match the default
+    expect(stored.colorBlindMode).toBe(DEFAULT_PROFILE.colorBlindMode);
+    expect(stored.baseLightness).toBe(DEFAULT_PROFILE.baseLightness);
+  });
+
+  it('last enqueued call wins when two calls patch the same key', async () => {
+    const p1 = storage.setProfile({ baseHue: 100 });
+    const p2 = storage.setProfile({ baseHue: 200 });
+    const p3 = storage.setProfile({ baseHue: 300 });
+    await Promise.all([p1, p2, p3]);
+
+    const stored = storageData['zenProfile'] as ZenProfile;
+    expect(stored.baseHue).toBe(300);
+  });
+
+  it('three different-key concurrent calls all land in final profile', async () => {
+    const p1 = storage.setProfile({ sensoryMode: 'high-contrast' });
+    const p2 = storage.setProfile({ colorBlindMode: 'tritanopia' });
+    const p3 = storage.setProfile({ baseLightness: 0.28 });
+    await Promise.all([p1, p2, p3]);
+
+    const stored = storageData['zenProfile'] as ZenProfile;
+    expect(stored.sensoryMode).toBe('high-contrast');
+    expect(stored.colorBlindMode).toBe('tritanopia');
+    expect(stored.baseLightness).toBe(0.28);
+  });
+});
