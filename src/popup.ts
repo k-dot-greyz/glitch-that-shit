@@ -83,11 +83,18 @@ async function renderPopup(): Promise<void> {
     </div>
   `;
 
-  // Inject popup's own theme preview
-  const previewStyle = document.createElement('style');
-  previewStyle.id = 'popup-preview-style';
+  // Inject popup's own theme preview — reuse existing element to avoid cascade poisoning on re-render.
+  // If renderPopup() is called again (e.g. reset), a second element with the same ID would be
+  // appended AFTER the first. getElementById() would still return the first (earlier in DOM),
+  // but the browser's cascade gives the second element priority — so preview updates would apply
+  // to the wrong element and appear frozen at the stale values.
+  let previewStyle = document.getElementById('popup-preview-style') as HTMLStyleElement | null;
+  if (!previewStyle) {
+    previewStyle = document.createElement('style');
+    previewStyle.id = 'popup-preview-style';
+    document.head.appendChild(previewStyle);
+  }
   previewStyle.textContent = generateThemeVariables(profile);
-  document.head.appendChild(previewStyle);
 
   // Wire controls
   const update = async (patch: Partial<ZenProfile>) => {

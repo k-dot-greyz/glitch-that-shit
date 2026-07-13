@@ -469,6 +469,42 @@ describe('renderPopup — preview style', () => {
     expect(styleEl).not.toBeNull();
     expect(mockGenerateThemeVariables).toHaveBeenCalledTimes(2); // initial + update
   });
+
+  it('exactly ONE #popup-preview-style element exists after reset', async () => {
+    // Trigger reset — this calls renderPopup() a second time
+    mockGetProfile.mockResolvedValueOnce(DEFAULT_PROFILE); // for the re-render inside reset
+    const btn = document.getElementById('btn-reset')!;
+    btn.click();
+    await new Promise(r => setTimeout(r, 0));
+
+    const all = document.head.querySelectorAll('#popup-preview-style');
+    expect(all.length).toBe(1);
+  });
+
+  it('preview style updates correctly via slider after reset (no cascade poisoning)', async () => {
+    // First: trigger reset to call renderPopup() a second time
+    mockGetProfile
+      .mockResolvedValueOnce(DEFAULT_PROFILE) // for re-render inside reset
+      .mockResolvedValueOnce({ ...DEFAULT_PROFILE, baseLightness: 0.25 }); // for update after slider
+
+    const resetBtn = document.getElementById('btn-reset')!;
+    resetBtn.click();
+    await new Promise(r => setTimeout(r, 0));
+
+    const updatedCss = ':root { --zen-bg: oklch(0.25 0 168); }';
+    mockGenerateThemeVariables.mockReturnValueOnce(updatedCss);
+
+    // Now move a slider — the preview element must be the one that gets updated
+    const slider = document.getElementById('slider-lightness') as HTMLInputElement;
+    slider.value = '0.25';
+    slider.dispatchEvent(new Event('input'));
+    await new Promise(r => setTimeout(r, 0));
+
+    // There must be exactly one element, and it must have the updated CSS
+    const all = document.head.querySelectorAll('#popup-preview-style');
+    expect(all.length).toBe(1);
+    expect((all[0] as HTMLStyleElement).textContent).toBe(updatedCss);
+  });
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
