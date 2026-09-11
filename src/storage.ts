@@ -10,6 +10,15 @@ import { ZenProfile, DEFAULT_PROFILE } from './site-profile.schema';
 
 const STORAGE_KEY = 'zenProfile';
 
+/**
+ * Serialises concurrent setProfile calls so that each write always reads the
+ * state that the previous write committed.  Without this, two rapid UI
+ * interactions (e.g. clicking a mode button while dragging a slider) both read
+ * the same stale profile and the second write silently overwrites the first
+ * write's change.
+ */
+let _writeChain: Promise<void> = Promise.resolve();
+
 export const storage = {
   async getProfile(): Promise<ZenProfile> {
     const data = await chrome.storage.sync.get(STORAGE_KEY);
@@ -17,10 +26,17 @@ export const storage = {
   },
 
   async setProfile(patch: Partial<ZenProfile>): Promise<void> {
-    const current = await this.getProfile();
-    await chrome.storage.sync.set({
-      [STORAGE_KEY]: { ...current, ...patch },
-    });
+    const pending = _writeChain
+      .catch(() => {})  // a previous write failure must not block the queue
+      .then(async () => {
+        const data = await chrome.storage.sync.get(STORAGE_KEY);
+        const current = (data[STORAGE_KEY] as ZenProfile) ?? DEFAULT_PROFILE;
+        await chrome.storage.sync.set({
+          [STORAGE_KEY]: { ...current, ...patch },
+        });
+      });
+    _writeChain = pending;
+    return pending;
   },
 
   async resetProfile(): Promise<void> {
