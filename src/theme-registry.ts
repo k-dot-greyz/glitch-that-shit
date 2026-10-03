@@ -76,17 +76,24 @@ export function applyTheme(profile: ZenProfile): void {
   if (!styleEl) {
     styleEl = document.createElement('style');
     styleEl.id = STYLE_ID;
-    document.head.appendChild(styleEl);
+    // document_start: <head> may not exist yet — fall back to <html>
+    (document.head ?? document.documentElement).appendChild(styleEl);
   }
   styleEl.textContent = generateThemeVariables(profile);
   document.documentElement.setAttribute(
     'data-zenos-sensory',
     profile.sensoryMode
   );
+  if (profile.reduceMotion) {
+    document.documentElement.setAttribute('data-gts-reduce-motion', '');
+  } else {
+    document.documentElement.removeAttribute('data-gts-reduce-motion');
+  }
 }
 
 /** Remove zenOS theme — restore page defaults. */
 export function removeTheme(): void {
   document.getElementById(STYLE_ID)?.remove();
   document.documentElement.removeAttribute('data-zenos-sensory');
+  document.documentElement.removeAttribute('data-gts-reduce-motion');
 }

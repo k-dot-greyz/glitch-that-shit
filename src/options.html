@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" data-color-scheme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>glitch-that-shit — settings</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 32px 16px; font: 14px/1.5 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+      background: var(--zen-bg, #0d0d0b); color: var(--zen-text, #d4d3cf);
+    }
+    main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+    h1 { font-size: 18px; color: var(--zen-accent, #00e5a0); margin: 0; letter-spacing: .05em; }
+    h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--zen-muted, #706f6a); margin: 0 0 10px; }
+    section { background: var(--zen-surface, #131311); border: 1px solid var(--zen-border, #2a2a26); border-radius: 8px; padding: 16px; }
+    label { display: block; margin: 6px 0; }
+    .help { color: var(--zen-muted, #706f6a); font-size: 12px; margin: 2px 0 8px; }
+    textarea, select, input[type=text] {
+      width: 100%; font: inherit; font-size: 13px; padding: 8px; border-radius: 6px;
+      background: var(--zen-bg, #0d0d0b); color: var(--zen-text, #d4d3cf); border: 1px solid var(--zen-border, #2a2a26);
+    }
+    textarea { min-height: 160px; resize: vertical; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    button {
+      font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+      background: none; color: var(--zen-accent, #00e5a0); border: 1px solid var(--zen-accent, #00e5a0);
+    }
+    button.danger { color: #ff6b6b; border-color: #ff6b6b; }
+    :focus-visible { outline: 2px solid var(--zen-accent, #00e5a0); outline-offset: 2px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    #errors { color: #ff6b6b; font-size: 12px; white-space: pre-line; }
+    #status { color: var(--zen-accent, #00e5a0); font-size: 12px; min-height: 18px; }
+    .preview { font-size: 16px; padding: 12px; border: 1px dashed var(--zen-border, #2a2a26); border-radius: 6px; }
+    footer { color: var(--zen-muted, #706f6a); font-size: 12px; text-align: center; }
+    footer a { color: inherit; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>⚡ glitch-that-shit · settings</h1>
+
+    <section aria-labelledby="h-filters">
+      <h2 id="h-filters">Filters</h2>
+      <p class="help">One entry per line. Plain text matches words/phrases; <code>/pattern/i</code> is a regular expression (flags: i, u).</p>
+      <textarea id="filters" spellcheck="false" aria-describedby="errors"></textarea>
+      <div id="errors" aria-live="polite"></div>
+      <label><input type="checkbox" id="caseSensitive" /> Case-sensitive matching</label>
+      <label><input type="checkbox" id="wholeWord" /> Whole words only (plain entries)</label>
+      <div class="row"><button id="btn-add-ads" type="button">+ common ad words</button></div>
+    </section>
+
+    <section aria-labelledby="h-effects">
+      <h2 id="h-effects">Effect</h2>
+      <div class="grid">
+        <label>Effect <select id="effect"></select></label>
+        <label>Intensity <select id="intensity"></select></label>
+      </div>
+      <label><input type="checkbox" id="showOriginalOnHover" /> Show original text on hover</label>
+      <label><input type="checkbox" id="clickToReveal" /> Click a glitched word to reveal it</label>
+      <label><input type="checkbox" id="glitchAds" /> Glitch known ad containers (visual only, nothing removed)</label>
+      <p class="preview">This is a <span id="preview-word">sponsored</span> sentence.</p>
+    </section>
+
+    <section aria-labelledby="h-sites">
+      <h2 id="h-sites">Paused sites</h2>
+      <p class="help">One hostname per line — subdomains included (e.g. <code>example.com</code>).</p>
+      <textarea id="disabledSites" spellcheck="false" style="min-height: 90px"></textarea>
+    </section>
+
+    <section aria-labelledby="h-general">
+      <h2 id="h-general">General &amp; data</h2>
+      <label><input type="checkbox" id="enabled" /> Extension enabled</label>
+      <div class="row">
+        <button id="btn-save" type="button">Save</button>
+        <button id="btn-export" type="button">Export JSON</button>
+        <button id="btn-import" type="button">Import JSON</button>
+        <button id="btn-reset" type="button" class="danger">Reset to defaults</button>
+        <input type="file" id="file-import" accept="application/json,.json" hidden />
+      </div>
+      <div id="status" role="status"></div>
+    </section>
+
+    <footer>Privacy-first: everything runs locally, nothing leaves your browser. ·
+      <a href="https://github.com/k-dot-greyz/glitch-that-shit" target="_blank" rel="noopener">source</a></footer>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>

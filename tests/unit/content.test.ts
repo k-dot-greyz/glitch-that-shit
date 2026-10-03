@@ -36,21 +36,20 @@ vi.mock('../../src/theme-registry', () => ({
   applyTheme: mockApplyTheme,
 }));
 
+vi.mock('../../src/config-store', () => ({
+  // Glitch engine disabled here: these tests cover the theme-enforcement loop only
+  // (glitch engine behaviour lives in content-glitch.test.ts). Keeps the DOM
+  // untouched so stale observers from earlier module instances stay quiet.
+  configStore: {
+    get: async () => ({ ...(await import('../../src/glitch-config')).defaultConfig(), enabled: false }),
+    onChange: () => {},
+  },
+}));
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function loadContentScript() {
   vi.resetModules();
-  vi.mock('../../src/storage', () => ({
-    storage: {
-      getProfile: mockGetProfile,
-      setProfile: mockSetProfile,
-      resetProfile: mockResetProfile,
-      onChange: mockOnChange,
-    },
-  }));
-  vi.mock('../../src/theme-registry', () => ({
-    applyTheme: mockApplyTheme,
-  }));
   await import('../../src/content');
   await new Promise(r => setTimeout(r, 0));
 }

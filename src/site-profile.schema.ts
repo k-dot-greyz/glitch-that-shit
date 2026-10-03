@@ -51,3 +51,39 @@ export const COLORBLIND_HUE_OFFSETS: Record<ColorBlindMode, number> = {
   deuteranopia: 60,  // same — both red/green axis
   tritanopia: -90,   // rotate blues → purples
 };
+
+export const SENSORY_MODES: readonly SensoryMode[] = ['default', 'calm', 'glitch', 'high-contrast'];
+export const COLORBLIND_MODES: readonly ColorBlindMode[] = ['none', 'protanopia', 'deuteranopia', 'tritanopia'];
+
+/** Numeric rails enforced at the storage edge (match popup slider ranges). */
+export const PROFILE_RAILS = {
+  baseLightness: [0, 1],
+  maxChroma: [0, 0.4],
+  baseHue: [0, 360],
+} as const;
+
+const clampNum = (v: unknown, [lo, hi]: readonly [number, number], fallback: number): number =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : fallback;
+
+/**
+ * Coerce untrusted data (storage, sync from another device, imports) into a
+ * valid ZenProfile. Unknown keys are dropped; invalid values fall back to
+ * DEFAULT_PROFILE. Never throws. Guards e.g. data-zenos-sensory attribute
+ * injection and NaN poisoning of the CSS variable block.
+ */
+export function sanitizeProfile(input: unknown): ZenProfile {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) return { ...DEFAULT_PROFILE };
+  const o = input as Record<string, unknown>;
+  return {
+    id: typeof o.id === 'string' && o.id.length <= 64 ? o.id : DEFAULT_PROFILE.id,
+    sensoryMode: SENSORY_MODES.includes(o.sensoryMode as SensoryMode) ? (o.sensoryMode as SensoryMode) : DEFAULT_PROFILE.sensoryMode,
+    colorBlindMode: COLORBLIND_MODES.includes(o.colorBlindMode as ColorBlindMode)
+      ? (o.colorBlindMode as ColorBlindMode)
+      : DEFAULT_PROFILE.colorBlindMode,
+    baseLightness: clampNum(o.baseLightness, PROFILE_RAILS.baseLightness, DEFAULT_PROFILE.baseLightness),
+    maxChroma: clampNum(o.maxChroma, PROFILE_RAILS.maxChroma, DEFAULT_PROFILE.maxChroma),
+    baseHue: clampNum(o.baseHue, PROFILE_RAILS.baseHue, DEFAULT_PROFILE.baseHue),
+    reduceMotion: typeof o.reduceMotion === 'boolean' ? o.reduceMotion : DEFAULT_PROFILE.reduceMotion,
+    dynamicRangeClamp: typeof o.dynamicRangeClamp === 'boolean' ? o.dynamicRangeClamp : DEFAULT_PROFILE.dynamicRangeClamp,
+  };
+}
