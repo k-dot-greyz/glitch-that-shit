@@ -7,7 +7,7 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      width: 280px;
+      width: 300px;
       font-family: 'JetBrains Mono', 'Fira Code', monospace;
       font-size: 11px;
       background: var(--zen-bg, #0d0d0b);
@@ -69,9 +69,28 @@
       color: var(--zen-text, #d4d3cf);
       font-size: 11px;
     }
+    .gts-section { gap: 6px; padding-bottom: 8px; border-bottom: 1px solid var(--zen-border, #2a2a26); }
+    .gts-row { display: flex; gap: 6px; align-items: center; }
+    .gts-between { justify-content: space-between; }
+    .gts-master { color: var(--zen-text, #d4d3cf); font-weight: 700; }
+    .gts-select, .gts-input {
+      flex: 1; min-width: 0; font: inherit; font-size: 10px; padding: 4px 6px; border-radius: 4px;
+      background: var(--zen-surface, #131311); color: var(--zen-text, #d4d3cf);
+      border: 1px solid var(--zen-border, #2a2a26);
+    }
+    .gts-select:focus-visible, .gts-input:focus-visible, .gts-btn:focus-visible, .zen-toggle:focus-visible {
+      outline: 2px solid var(--zen-accent, #00e5a0); outline-offset: 1px;
+    }
+    .gts-btn {
+      font: inherit; font-size: 10px; padding: 4px 8px; border-radius: 4px; cursor: pointer;
+      background: none; color: var(--zen-accent, #00e5a0); border: 1px solid var(--zen-accent, #00e5a0);
+    }
+    .gts-msg { font-size: 10px; min-height: 12px; color: var(--zen-muted, #706f6a); }
+    .gts-msg[data-kind="error"] { color: #ff6b6b; }
+    .gts-count { color: var(--zen-muted, #706f6a); font-size: 10px; }
   </style>
 </head>
 <body>
-  <script type="module" src="/src/popup.ts"></script>
+  <script src="popup.js"></script>
 </body>
 </html>
