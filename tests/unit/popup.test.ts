@@ -35,17 +35,6 @@ vi.mock('../../src/theme-registry', () => ({
 
 async function loadPopup(profile: ZenProfile = DEFAULT_PROFILE) {
   vi.resetModules();
-  vi.mock('../../src/storage', () => ({
-    storage: {
-      getProfile: mockGetProfile,
-      setProfile: mockSetProfile,
-      resetProfile: mockResetProfile,
-      onChange: mockOnChange,
-    },
-  }));
-  vi.mock('../../src/theme-registry', () => ({
-    generateThemeVariables: mockGenerateThemeVariables,
-  }));
 
   mockGetProfile.mockResolvedValue(profile);
   mockSetProfile.mockResolvedValue(undefined);
