@@ -46,7 +46,12 @@ scripts/
   build.mjs              Vite (IIFE per entry) + static copy + manifest per target + deterministic zip
   validate-manifest.mjs  offline MV3 checks
   smoke.mjs              zero-dependency CDP smoke test
+  e2e.mjs                headless journey + ablation; progressive report.json
+  e2e-report.mjs         artifact mint (rewrite report after every step)
+  chrome-session.mjs     shared CDP pipe used by smoke and e2e
   install.sh             one-command installer
+docs/
+  config-on-the-block-tree.md   how one GlitchConfig is worn by each hit
 ```
 
 ## Dev loop

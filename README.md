@@ -48,6 +48,8 @@ Builds are reproducible: the same commit produces byte-identical zips (see the `
 4. Untick **Active on <site>** to pause on the current site.
 5. **settings ⚙** opens the full options page: bulk filter editing, whole-word / case options, hover & click-to-reveal, ad glitching, paused sites, export / import / reset.
 
+The popup shows a filter count. The options page is the list. On the page itself, each hit is a `span.gts-fx` that wears the current effect and intensity as attributes. One config covers the tab. See [Config on the block tree](docs/config-on-the-block-tree.md).
+
 Right-click selected text → **Glitch "…" everywhere** adds it as a filter.
 
 ### Keyboard shortcuts

@@ -21,6 +21,8 @@ npm run test:coverage    # with v8 coverage
 npx vitest tests/unit/matcher.test.ts   # one file, watch mode
 npm run build && npm run smoke          # real headless Chrome against dist/chrome
 npm run e2e                              # e2e + ablation; artifacts/e2e/<time>/report.json
+
+What a hit looks like in the page tree: [docs/config-on-the-block-tree.md](../docs/config-on-the-block-tree.md).
 ```
 
 Storage helpers exposed by the setup file: `globalThis.__storageData` (sync), `__localData` (local),
