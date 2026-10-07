@@ -19,7 +19,7 @@ First release candidate: the word/phrase glitch engine is back, now on the TypeS
 - Firefox 140+ support (derived manifest with gecko id, `background.scripts`, data-collection declaration "none").
 
 ### Fixed
-- `storage.setProfile` lost updates on rapid input — writes are now serialized (supersedes #17 / #18).
+- `storage.setProfile` lost updates on rapid input — writes are serialized (builds on merged #17; also serializes `resetProfile` and sanitizes the merged result; supersedes #18).
 - `storage.onChange` crashed the content script when sync data was cleared (`newValue` undefined).
 - Stored/synced profiles are sanitized (enum + numeric rails) before reaching CSS or DOM attributes.
 - Theme injection no longer throws when `<head>` doesn't exist yet at `document_start`.
