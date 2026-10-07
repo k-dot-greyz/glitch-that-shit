@@ -8,9 +8,18 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 
 let mod: typeof import('../../src/options');
 
+/** Mount the options fixture without executing its script tag. The test imports the module itself. */
+function mountOptionsFixture(html: string): void {
+  const parsed = new DOMParser().parseFromString(html, 'text/html');
+  parsed.querySelectorAll('script').forEach((node) => node.remove());
+  const adopt = (nodes: Node[]) => nodes.map((node) => document.importNode(node, true));
+  document.head.replaceChildren(...adopt([...parsed.head.childNodes]));
+  document.body.replaceChildren(...adopt([...parsed.body.childNodes]));
+}
+
 describe('options page', () => {
   beforeAll(async () => {
-    document.documentElement.innerHTML = optionsHtml.replace(/^[\s\S]*?<html[^>]*>/, '').replace(/<script[\s\S]*?<\/script>/g, '');
+    mountOptionsFixture(optionsHtml);
     local()[CONFIG_KEY] = { filters: ['alpha', 'beta'], effect: 'blur' };
     mod = await import('../../src/options');
     await tick();
