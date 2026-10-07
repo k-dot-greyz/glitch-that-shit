@@ -25,7 +25,7 @@ First release candidate: the word/phrase glitch engine is back, now on the TypeS
 - Theme injection no longer throws when `<head>` doesn't exist yet at `document_start`.
 
 ### Changed
-- Removed `@crxjs/vite-plugin` and `vite.config.ts`; Vite is used only as a bundler from `scripts/build.mjs` (ZEN-288 direction, −300 lockfile lines). Dev dependencies pinned to exact versions; `npm audit fix` applied (remaining: 1 moderate, dev-only vitest advisory).
+- Removed `@crxjs/vite-plugin` and `vite.config.ts`; Vite is used only as a bundler from `scripts/build.mjs` (ZEN-288 direction, −300 lockfile lines). Dev dependencies pinned to exact versions; `npm audit` clean (vitest 4.1.11 for GHSA-82fw-gwwq-j7x9, source-map-js for GHSA-68fv-2mgg-jv7q; both dev-only).
 - Removed the dead legacy JS tree (`src/content|popup|options|background|shared/*.js`), `scripts/setup.js` and `DEV_SETUP_CHEAT_SHEET.md`; docs updated to the real stack.
 - Permissions: dropped `scripting`; added `contextMenus`. Content script limited to `http(s)` pages.
 - Popup markup is static and parsed inert; dynamic values are applied via DOM properties (web-ext lint clean).
