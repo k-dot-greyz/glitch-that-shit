@@ -82,6 +82,7 @@ npm run lint       # tsc --noEmit
 npm test           # vitest (jsdom)
 npm run build      # dist/chrome, dist/firefox, zips (+ manifest validation)
 npm run smoke      # headless Chrome: loads dist/chrome and checks a real page
+npm run e2e        # same journey + hostile-filter ablation; report.json minted as it runs
 ```
 
 Conventional commits (`feat:`, `fix:`, `docs:`, `test:`, `chore:` …).

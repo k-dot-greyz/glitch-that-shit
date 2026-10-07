@@ -14,7 +14,8 @@
     "test:coverage": "vitest run --coverage",
     "validate:manifest": "node scripts/validate-manifest.mjs dist/chrome chrome && node scripts/validate-manifest.mjs dist/firefox firefox",
     "verify": "npm run lint && npm test",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "e2e": "node scripts/e2e.mjs"
   },
   "devDependencies": {
     "@types/chrome": "0.0.268",

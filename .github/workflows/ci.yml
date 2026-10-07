@@ -39,10 +39,15 @@ jobs:
         run: npx --yes web-ext@10.7.0 lint --source-dir dist/firefox --warnings-as-errors
       - name: Headless Chrome smoke test
         run: npm run smoke
+      - name: E2E (ablation + progressive report)
+        if: always()
+        run: npm run e2e
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
         with:
-          name: glitch-that-shit-extension
+          name: glitch-that-shit-e2e
           path: |
+            artifacts/e2e/
             dist/*.zip
             dist/*.sha256
-          if-no-files-found: error
+          if-no-files-found: warn

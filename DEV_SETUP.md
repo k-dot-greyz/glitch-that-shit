@@ -18,6 +18,7 @@
 | `npm run build:chrome` / `build:firefox` | Single target |
 | `npm run validate:manifest` | Re-run manifest checks on `dist/` |
 | `npm run smoke` | Headless Chrome via CDP: loads `dist/chrome`, checks glitching, popup, options, live updates |
+| `npm run e2e` | Same journey, plus a hostile-filter ablation. Writes `artifacts/e2e/<time>/report.json` after every step. A failed step skips what depends on it. Screenshot misses warn and do not fail the run |
 | `npm run package` | `verify` + `build` |
 
 Firefox lint (not a dependency, pinned on use): `npx web-ext@10.7.0 lint --source-dir dist/firefox`.

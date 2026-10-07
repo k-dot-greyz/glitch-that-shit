@@ -29,6 +29,7 @@ desktop.ini
 
 # Test coverage
 coverage/
+artifacts/
 
 # Logs
 logs/

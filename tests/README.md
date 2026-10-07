@@ -20,6 +20,7 @@ npm test                 # all unit/integration tests
 npm run test:coverage    # with v8 coverage
 npx vitest tests/unit/matcher.test.ts   # one file, watch mode
 npm run build && npm run smoke          # real headless Chrome against dist/chrome
+npm run e2e                              # e2e + ablation; artifacts/e2e/<time>/report.json
 ```
 
 Storage helpers exposed by the setup file: `globalThis.__storageData` (sync), `__localData` (local),
