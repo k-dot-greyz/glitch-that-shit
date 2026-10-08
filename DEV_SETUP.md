@@ -43,7 +43,7 @@ src/
   settings-bundle.ts     export/import format
   messages.ts            typed runtime messages
 scripts/
-  build.mjs              Vite (IIFE per entry) + static copy + manifest per target + deterministic zip
+  build.mjs              esbuild (IIFE per entry) + static copy + manifest per target + deterministic zip
   validate-manifest.mjs  offline MV3 checks
   smoke.mjs              zero-dependency CDP smoke test
   e2e.mjs                headless journey + ablation; progressive report.json

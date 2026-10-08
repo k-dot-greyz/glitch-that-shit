@@ -11,7 +11,7 @@ This repository is public OSS and is also linked from [dev-master](https://githu
 | Path | Purpose |
 |------|---------|
 | [manifest.json](manifest.json) | Source MV3 manifest (Chromium flavour; the build derives the Firefox manifest) |
-| [package.json](package.json) | Node tooling: TypeScript, Vite (bundling only), Vitest — exact pinned versions |
+| [package.json](package.json) | Node tooling: TypeScript, esbuild (packager), Vitest — exact pinned versions. Vite is a Vitest peer only |
 | [src/](src/) | TypeScript sources: `content.ts`, `background.ts`, `popup.ts`, `options.ts` entrypoints + pure modules (see [DEV_SETUP.md](DEV_SETUP.md#layout)) |
 | [icons/](icons/) | Extension icons |
 | [scripts/](scripts/) | `build.mjs`, `validate-manifest.mjs`, `smoke.mjs`, `install.sh` |
@@ -37,9 +37,9 @@ This repository is public OSS and is also linked from [dev-master](https://githu
 |-------|------------|
 | Extension platform | [Chrome Extensions Manifest V3](https://developer.chrome.com/docs/extensions/mv3/) (Chromium, Edge, Brave) and Firefox 140+ MV3 |
 | Language | **TypeScript** (strict), HTML, CSS — zero runtime dependencies |
-| Bundling | **Vite** library mode → one self-contained IIFE per entry (`scripts/build.mjs`); no dev server/HMR |
+| Bundling | **esbuild** → one self-contained IIFE per entry (`scripts/build.mjs`); no dev server/HMR. Vite is a Vitest peer, not the packager |
 | Storage / IPC | `chrome.storage.local` (GlitchConfig), `chrome.storage.sync` (ZenProfile), typed `chrome.runtime` messages |
-| Tooling | **Node.js** ≥22.12 (CI: 24), **npm** |
+| Tooling | **Node.js** ≥22.12 (CI / `.nvmrc`: 24; 20.19+ also works), **npm** |
 | Test runner | **Vitest** + **jsdom**; headless Chrome smoke test via CDP (`npm run smoke`) |
 | Lint | `tsc --noEmit` (strict); Firefox: `web-ext lint` (pinned, run via npx) |
 
@@ -159,7 +159,7 @@ All development in this repository must adhere to the **GlitchWorks Agnostic Arc
 
 ## ✅ 4. Local quality gates and verification
 
-Run from the repository root after `npm run setup && npm install`:
+Run from the repository root after `npm ci`:
 
 | Command | Purpose |
 |---------|---------|
