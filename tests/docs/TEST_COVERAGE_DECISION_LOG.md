@@ -4,7 +4,7 @@
 
 **Feat (merged):** [#23](https://github.com/k-dot-greyz/glitch-that-shit/pull/23) — TypeScript glitch engine, options/popup/background, build/install/smoke/e2e reporting.
 
-**Test PR:** (this branch) → `main`
+**Test PR:** [#24](https://github.com/k-dot-greyz/glitch-that-shit/pull/24) → `main`
 
 ### Stories implemented (80/20)
 
