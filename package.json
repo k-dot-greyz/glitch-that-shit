@@ -1,22 +1,33 @@
 {
   "name": "glitch-that-shit",
-  "version": "0.2.0",
-  "description": "Personal reality distortion field. OKLCH a11y engine, HDR chroma clamping, zenOS Persona Engine.",
+  "version": "0.3.0-rc.1",
+  "description": "Glitch out unwanted words, phrases and ads with custom visual effects. Privacy-first MV3 browser extension with the zenOS OKLCH a11y engine.",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/build.mjs",
+    "build:chrome": "node scripts/build.mjs --target chrome",
+    "build:firefox": "node scripts/build.mjs --target firefox",
+    "package": "npm run verify && node scripts/build.mjs",
     "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "validate:manifest": "node scripts/validate-manifest.mjs dist/chrome chrome && node scripts/validate-manifest.mjs dist/firefox firefox",
+    "verify": "npm run lint && npm test",
+    "smoke": "node scripts/smoke.mjs",
+    "e2e": "node scripts/e2e.mjs"
   },
   "devDependencies": {
-    "@crxjs/vite-plugin": "^2.7.1",
-    "@types/chrome": "^0.0.268",
-    "@vitest/coverage-v8": "^4.1.10",
-    "jsdom": "^24.0.0",
-    "typescript": "^5.4.0",
-    "vite": "^8.1.4",
-    "vitest": "^4.1.10"
+    "@types/chrome": "0.0.268",
+    "@vitest/coverage-v8": "4.1.10",
+    "jsdom": "24.1.3",
+    "typescript": "5.9.3",
+    "vite": "8.1.4",
+    "vitest": "4.1.10"
+  },
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.19"
   }
 }

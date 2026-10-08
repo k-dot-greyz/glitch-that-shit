@@ -10,27 +10,23 @@ This repository is public OSS and is also linked from [dev-master](https://githu
 
 | Path | Purpose |
 |------|---------|
-| [manifest.json](manifest.json) | MV3 extension manifest (permissions, content scripts, commands) |
-| [package.json](package.json) | Node tooling: Jest, ESLint, Prettier, `web-ext` scripts |
-| [src/content/](src/content/) | Content scripts + page-level CSS (`content.js`, `content.css`) |
-| [src/background/](src/background/) | Service worker (`background.js`) |
-| [src/popup/](src/popup/) | Toolbar popup UI (HTML/CSS/JS) |
-| [src/options/](src/options/) | Full settings page (HTML/CSS/JS) |
-| [src/shared/](src/shared/) | Shared utilities (e.g. [utils.js](src/shared/utils.js)) |
-| [assets/](assets/) | Extension icons and static assets |
-| [scripts/setup.js](scripts/setup.js) | Dev environment bootstrap and validation |
-| [tests/](tests/) | Jest tests (see [tests/README.md](tests/README.md) for intended layout) |
-| [README.md](README.md) | User-facing overview and quick install |
-| [DEV_SETUP.md](DEV_SETUP.md) | Product-facing developer setup guide |
-| [DEV_SETUP_CHEAT_SHEET.md](DEV_SETUP_CHEAT_SHEET.md) | Quick command reference for contributors |
+| [manifest.json](manifest.json) | Source MV3 manifest (Chromium flavour; the build derives the Firefox manifest) |
+| [package.json](package.json) | Node tooling: TypeScript, Vite (bundling only), Vitest — exact pinned versions |
+| [src/](src/) | TypeScript sources: `content.ts`, `background.ts`, `popup.ts`, `options.ts` entrypoints + pure modules (see [DEV_SETUP.md](DEV_SETUP.md#layout)) |
+| [icons/](icons/) | Extension icons |
+| [scripts/](scripts/) | `build.mjs`, `validate-manifest.mjs`, `smoke.mjs`, `install.sh` |
+| [tests/](tests/) | Vitest tests (`tests/unit/`), chrome.* mocks in `tests/helpers/setup.ts` |
+| [docs/architecture/](docs/architecture/) | Architecture decisions (e.g. ZEN-288) |
+| [README.md](README.md) | User-facing overview and install |
+| [DEV_SETUP.md](DEV_SETUP.md) | Developer setup and command reference |
+| [CHANGELOG.md](CHANGELOG.md) | Release notes |
 
-**Quick try (requires Node.js ≥16 and a Chromium or Firefox browser):**
+**Quick try (requires Node.js ≥22.12 and a Chromium or Firefox browser):**
 
 ```bash
-npm run setup && npm install
-npm run validate
-# Chrome/Edge: chrome://extensions → Developer mode → Load unpacked → repo root
-# Firefox: npm run dev:firefox   # or load manifest via about:debugging
+./scripts/install.sh
+# Chrome/Edge: chrome://extensions → Developer mode → Load unpacked → dist/chrome
+# Firefox: about:debugging → Load Temporary Add-on → dist/firefox/manifest.json
 ```
 
 ---
@@ -39,14 +35,13 @@ npm run validate
 
 | Layer | Technology |
 |-------|------------|
-| Extension platform | [Chrome Extensions Manifest V3](https://developer.chrome.com/docs/extensions/mv3/) (Chromium, Edge, Brave) |
-| Firefox workflow | [web-ext](https://extensionworkshop.com/documentation/develop/web-ext-command-reference/) (`npm run dev:firefox`, `npm run package:firefox`) |
-| Language | Vanilla **JavaScript** (ES2021+), HTML, CSS — no bundler required for local dev |
-| Storage / IPC | `chrome.storage`, `chrome.runtime` messaging between content, background, popup, and options |
-| Tooling | **Node.js** ≥16, **npm** ≥8 |
-| Test runner | **Jest** + **jsdom** (`testEnvironment: jsdom` in `package.json`) |
-| Lint / format | **ESLint** (airbnb-base + webextensions env), **Prettier** |
-| Git hooks | **Husky** (optional; `npm run precommit` mirrors CI-style checks) |
+| Extension platform | [Chrome Extensions Manifest V3](https://developer.chrome.com/docs/extensions/mv3/) (Chromium, Edge, Brave) and Firefox 140+ MV3 |
+| Language | **TypeScript** (strict), HTML, CSS — zero runtime dependencies |
+| Bundling | **Vite** library mode → one self-contained IIFE per entry (`scripts/build.mjs`); no dev server/HMR |
+| Storage / IPC | `chrome.storage.local` (GlitchConfig), `chrome.storage.sync` (ZenProfile), typed `chrome.runtime` messages |
+| Tooling | **Node.js** ≥22.12 (CI: 24), **npm** |
+| Test runner | **Vitest** + **jsdom**; headless Chrome smoke test via CDP (`npm run smoke`) |
+| Lint | `tsc --noEmit` (strict); Firefox: `web-ext lint` (pinned, run via npx) |
 
 ---
 
@@ -57,7 +52,7 @@ npm run validate
 **Do not commit dev-master–internal documentation, fork-only notes, or monorepo orchestration guides into this repository.**
 
 * **Why?** This repo is modular public OSS. Files such as `SUBMODULE_MANAGEMENT.md`, agent session notebooks, private fork runbooks, or zenOS superproject SOPs belong in the superproject, not here.
-* **Allowed here:** Extension source under `src/`, `manifest.json`, assets, tests, and **product-facing** docs (`README.md`, `DEV_SETUP.md`, `DEV_SETUP_CHEAT_SHEET.md`, `CONTRIBUTING.md`, `LICENSE`).
+* **Allowed here:** Extension source under `src/`, `manifest.json`, assets, tests, and **product-facing** docs (`README.md`, `DEV_SETUP.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`).
 * **Belongs in dev-master:** Internal guides and monorepo standards → [`dev-master/dex/03-docs/guides/`](https://github.com/k-dot-greyz/dev-master/tree/main/dex/03-docs/guides/) (see [Submodule Contributing Workflow](https://github.com/k-dot-greyz/dev-master/blob/main/dex/03-docs/guides/SUBMODULE_CONTRIBUTING_WORKFLOW.md)).
 
 ---
@@ -133,7 +128,7 @@ All development in this repository must adhere to the **GlitchWorks Agnostic Arc
 ### 3.2. Polymorphism by default (interface-driven contracts)
 
 * **Rule:** Depend on abstractions, not concretions.
-* **Application:** Effect rendering, filter matching, and storage access should be swappable (e.g. a `applyEffect(node, effectConfig)` contract and a `matchFilters(text, rules)` helper in `src/shared/`). Tests can substitute mocks without loading the full extension UI.
+* **Application:** Effect rendering, filter matching, and storage access should be swappable (e.g. `compileMatcher(config)` in `src/matcher.ts` and the `Glitcher` DOM engine in `src/glitcher.ts`). Tests can substitute mocks without loading the full extension UI.
 
 ### 3.3. Open piping (strict inter-process communication)
 
@@ -168,25 +163,22 @@ Run from the repository root after `npm run setup && npm install`:
 
 | Command | Purpose |
 |---------|---------|
-| `npm run validate` | Environment and repo layout check (`scripts/setup.js --validate-only`) |
-| `npm run lint` | ESLint on `src/**/*.js` |
-| `npm run lint:fix` | Auto-fix ESLint issues where possible |
-| `npm run format:check` | Prettier check for `src/**/*.{js,css,html}` |
-| `npm run format` | Apply Prettier formatting |
-| `npm test` | Jest unit/integration tests |
-| `npm run test:coverage` | Jest with coverage thresholds (see `package.json`) |
-| `npm run precommit` | Lint + format check + tests (pre-push habit) |
-| `npm run dev:firefox` | Temporary Firefox add-on via `web-ext` |
-| `npm run package:firefox` | Build Firefox artifact under `dist/` |
+| `npm ci` | Install pinned devDependencies |
+| `npm run lint` | TypeScript strict typecheck (`tsc --noEmit`) |
+| `npm test` | Vitest unit/integration tests |
+| `npm run test:coverage` | Vitest with v8 coverage |
+| `npm run build` | Build `dist/chrome`, `dist/firefox` + zips; validates manifests |
+| `npm run smoke` | Headless Chrome smoke test against `dist/chrome` |
+| `npx web-ext@10.7.0 lint --source-dir dist/firefox` | Firefox/AMO lint |
 
 **Manual extension smoke (required for UI/DOM changes):**
 
-1. Load unpacked at repo root (Chromium) or use `npm run dev:firefox`.
+1. `npm run build`, then load `dist/chrome` unpacked (Chromium) or `dist/firefox/manifest.json` as a temporary add-on (Firefox).
 2. Enable the extension, add a test filter word, confirm effect on a simple HTML page and one “real” site.
 3. Open options and popup; verify settings persist after reload.
 4. Check extension service worker and page consoles for errors.
 
-> **Build scripts:** `package.json` may define `build` / `package:chrome` targets as the packaging story matures. If a script is missing locally, treat `validate` + lint + test + manual load as the source of truth until the build pipeline lands.
+> CI (`.github/workflows/ci.yml`) runs typecheck, tests, build, a reproducibility check, web-ext lint and the headless smoke test on every PR.
 
 ---
 
@@ -252,7 +244,6 @@ If you develop inside the monorepo, bump the submodule pointer from the superpro
 ### Additional resources
 
 * [DEV_SETUP.md](DEV_SETUP.md) — full environment setup
-* [DEV_SETUP_CHEAT_SHEET.md](DEV_SETUP_CHEAT_SHEET.md) — command cheat sheet
 * [Chrome extension docs (MV3)](https://developer.chrome.com/docs/extensions/mv3/)
 
 ---

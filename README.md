@@ -4,172 +4,90 @@ A browser extension that glitches out unwanted words, phrases, or ads with custo
 
 ## 🌟 Features
 
-- **Custom Visual Effects**: Apply glitch, pixelation, blur, scramble, or rainbow effects to unwanted content
-- **Word & Phrase Filtering**: Block specific words, phrases, or regex patterns
-- **Ad Blocking Enhancement**: Advanced ad detection with visual censoring instead of removal
-- **User-Configurable**: Easy-to-use settings panel for customizing filters and effects
-- **Privacy-First**: All processing happens locally - no data sent to external servers
-- **ZenOS-Inspired**: Minimalist, calm aesthetic with focus on digital wellbeing
-- **Cross-Browser**: Works on Chrome, Firefox, Edge, and other Chromium-based browsers
-- **Real-Time Processing**: Instant content filtering as pages load
+- **Word & phrase filtering** — plain words/phrases (Unicode-aware whole-word matching) or `/regex/i` entries, validated as you type
+- **7 visual effects** — glitch (RGB split), pixelate, blur, scramble, rainbow, sparkle, redact — at subtle / medium / extreme intensity
+- **Reveal on demand** — hover shows the original (tooltip), click reveals it in place
+- **Ad glitching (opt-in)** — well-known ad containers get visually censored, nothing is removed
+- **Live on SPAs** — a single MutationObserver glitches content as it streams in; settings changes apply to open tabs instantly
+- **Per-site pause** — from the popup or right-click menu; subdomains included
+- **zenOS a11y engine** — OKLCH theme rails, sensory modes (calm / glitch / high-contrast), colorblind hue rotation, HDR chroma clamp, reduced-motion respected
+- **Export / import** settings as JSON (validated before anything is stored)
+- **Privacy-first** — no network requests, no analytics, permissions limited to `storage`, `contextMenus`, `activeTab` (+ the content script on http/https pages)
+- **Cross-browser** — Chrome, Edge, Brave and other Chromium browsers; Firefox 140+
 
 ## 🚀 Installation
 
-### From Browser Extension Store
+> Store listings are not live yet. Install from a release zip or build from source.
 
-1. Visit the [Chrome Web Store](# "Coming Soon") or [Firefox Add-ons](# "Coming Soon")
-2. Click "Add to Browser"
-3. Confirm installation when prompted
-4. Look for the glitch-that-shit icon in your browser toolbar
+### Option A — release zip (no toolchain needed)
 
-### For Developers (Quick Setup)
+1. Download `glitch-that-shit-<version>-chrome.zip` (or `-firefox.zip`) from [Releases](https://github.com/k-dot-greyz/glitch-that-shit/releases) and unzip it.
+2. **Chrome / Edge / Brave:** open `chrome://extensions` (`edge://extensions`), enable **Developer mode**, click **Load unpacked**, select the unzipped folder.
+3. **Firefox 140+:** open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on…**, select `manifest.json` inside the unzipped folder (temporary until restart — permanent installs need AMO signing).
 
-**One-command setup:**
+Verify the download: `sha256sum -c glitch-that-shit-<version>-chrome.zip.sha256`.
+
+### Option B — one-command build from source
+
+Requires Node.js 22.12+ (or 20.19+) and git:
+
 ```bash
-git clone https://github.com/k-dot-greyz/glitch-that-shit.git && cd glitch-that-shit && npm run setup && npm install
+git clone --branch v0.3.0-rc.1 https://github.com/k-dot-greyz/glitch-that-shit.git && cd glitch-that-shit && ./scripts/install.sh
 ```
 
-**Then load in your browser:**
-- **Chrome/Edge**: Navigate to `chrome://extensions/` (or `edge://extensions/`), enable "Developer mode", click "Load unpacked", select the `glitch-that-shit` directory
-- **Firefox**: Navigate to `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on", select `manifest.json`
+`scripts/install.sh` installs the exact pinned dev dependencies from `package-lock.json` (`npm ci`), runs typecheck + tests, builds `dist/chrome/`, `dist/firefox/` and matching zips, and prints the load-unpacked steps. Options: `--target chrome|firefox`, `--skip-tests`.
+Without bash (e.g. Windows PowerShell): `npm ci && npm run package`.
 
-📖 **See [DEV_SETUP.md](DEV_SETUP.md) for detailed development instructions**
-
-### Manual Installation (Step-by-Step)
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/k-dot-greyz/glitch-that-shit.git
-   cd glitch-that-shit
-   ```
-2. Run the setup script:
-   ```bash
-   npm run setup
-   npm install
-   ```
-3. Open your browser's extension management page:
-   - Chrome: `chrome://extensions/`
-   - Firefox: `about:debugging#/runtime/this-firefox`
-   - Edge: `edge://extensions/`
-4. Enable "Developer mode" (Chrome/Edge) or click "Load Temporary Add-on" (Firefox)
-5. Click "Load unpacked" (Chrome/Edge) and select the cloned directory, or select `manifest.json` (Firefox)
-6. The extension will appear in your browser toolbar
+Builds are reproducible: the same commit produces byte-identical zips (see the `.sha256` files).
 
 ## 📖 Usage
 
-### Quick Start
+1. Click the ⚡ toolbar icon.
+2. Toggle **Glitching enabled**, pick an effect and intensity.
+3. Type a word, phrase or `/regex/i` and hit **+ glitch** — open tabs update immediately.
+4. Untick **Active on <site>** to pause on the current site.
+5. **settings ⚙** opens the full options page: bulk filter editing, whole-word / case options, hover & click-to-reveal, ad glitching, paused sites, export / import / reset.
 
-1. Click the glitch-that-shit icon in your browser toolbar
-2. Toggle the extension ON/OFF with the main switch
-3. Add words or phrases to your filter list
-4. Choose your preferred glitch effect
-5. Browse the web with enhanced content control!
+The popup shows a filter count. The options page is the list. On the page itself, each hit is a `span.gts-fx` that wears the current effect and intensity as attributes. One config covers the tab. See [Config on the block tree](docs/config-on-the-block-tree.md).
 
-### Advanced Configuration
+Right-click selected text → **Glitch "…" everywhere** adds it as a filter.
 
-- **Filter Lists**: Create custom lists for different websites or contexts
-- **Effect Intensity**: Adjust the strength of visual effects (subtle to extreme)
-- **Whitelist/Blacklist**: Specify which websites to include or exclude
-- **Regex Support**: Use regular expressions for advanced pattern matching
-- **Scheduled Filtering**: Set time-based rules for when filtering is active
+### Keyboard shortcuts
 
-### Supported Visual Effects
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+Shift+G | Toggle glitching on/off |
+| Ctrl+Shift+E | Cycle effect |
+| Ctrl+Shift+F | Quick filter (opens popup) |
+| Ctrl+Shift+S | Open settings |
 
-- 🌊 **Glitch**: Digital distortion with RGB separation
-- 🔲 **Pixelation**: 8-bit style censoring blocks
-- 🌫️ **Blur**: Gaussian blur with adjustable intensity
-- 🎲 **Scramble**: Random character substitution
-- 🌈 **Rainbow**: Color-shifting text overlay
-- ✨ **Sparkle**: Animated particle effects
-- 🎭 **Custom**: Upload your own CSS animations
+Change them at `chrome://extensions/shortcuts` (Firefox: *Manage Extension Shortcuts* in `about:addons`). The browser may skip a suggested shortcut that collides with one it already uses.
 
-### Keyboard Shortcuts
+### zenOS sensory profile
 
-- Ctrl+Shift+G - Toggle extension on/off
-- Ctrl+Shift+F - Open quick filter dialog
-- Ctrl+Shift+E - Cycle through effect types
-- Ctrl+Shift+S - Open settings panel
-
-## 🔧 Configuration
-
-Access the settings panel by:
-
-1. Right-clicking the extension icon → "Options"
-2. Using keyboard shortcut Ctrl+Shift+S
-3. Visiting chrome-extension://[extension-id]/options.html
-
-### Settings Categories
-
-- **Filters**: Manage word lists, regex patterns, and sensitivity levels
-- **Effects**: Customize visual styles, animations, and intensities
-- **Performance**: Adjust processing speed and resource usage
-- **Privacy**: Review data handling and export/import settings
-- **Advanced**: Developer tools, debug mode, and experimental features
+The lower half of the popup drives the OKLCH theme engine used by the effects: **calm** (default) freezes all animation, **glitch** cranks effect intensity, **high-contrast** turns every match into a solid bar. *Reduce motion* is on by default — untick it for animated glitches.
 
 ## 🛡️ Privacy & Security
 
 - **No Data Collection**: glitch-that-shit does not collect, store, or transmit any personal data
 - **Local Processing**: All filtering and effects are applied locally on your device
 - **Open Source**: Full source code available for security review
-- **Minimal Permissions**: Requests only essential browser permissions
-- **Regular Updates**: Security patches and improvements released frequently
+- **Minimal Permissions**: `storage`, `contextMenus`, `activeTab` only
 
 ## 🤝 Contributing
 
-We welcome contributions! This project follows the zenOS development philosophy with standardized workflows.
-
-### Quick Start for Contributors
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [DEV_SETUP.md](DEV_SETUP.md).
 
 ```bash
-# 1. Fork and clone
-git clone https://github.com/YOUR_USERNAME/glitch-that-shit.git
-cd glitch-that-shit
-
-# 2. Automated setup
-npm run setup && npm install
-
-# 3. Create feature branch
-git checkout -b feature/amazing-feature
-
-# 4. Make changes, then test
-npm test && npm run lint
-
-# 5. Commit using conventions
-git commit -m "feat: add amazing feature"
-
-# 6. Push and create PR
-git push origin feature/amazing-feature
+npm ci
+npm run lint       # tsc --noEmit
+npm test           # vitest (jsdom)
+npm run build      # dist/chrome, dist/firefox, zips (+ manifest validation)
+npm run smoke      # headless Chrome: loads dist/chrome and checks a real page
+npm run e2e        # same journey + hostile-filter ablation; report.json minted as it runs
 ```
 
-### Development Resources
-
-- 📖 **[CONTRIBUTING.md](CONTRIBUTING.md)** - Full contribution guidelines
-- 🚀 **[DEV_SETUP.md](DEV_SETUP.md)** - Comprehensive development setup guide
-- 📋 **[DEV_SETUP_CHEAT_SHEET.md](DEV_SETUP_CHEAT_SHEET.md)** - Quick command reference
-- 🎯 **[GitHub Issues](../../issues)** - Bug reports and feature requests
-
-### Helpful Commands
-
-```bash
-npm run setup           # Setup dev environment
-npm test               # Run tests
-npm run lint           # Check code style
-npm run lint:fix       # Auto-fix linting issues
-npm run format         # Format code with Prettier
-npm run build          # Build extension
-npm run validate       # Validate environment
-```
-
-### Commit Convention
-
-We use conventional commits:
-- `feat:` - New features
-- `fix:` - Bug fixes
-- `docs:` - Documentation changes
-- `style:` - Code formatting
-- `refactor:` - Code refactoring
-- `test:` - Test updates
-- `chore:` - Maintenance tasks
+Conventional commits (`feat:`, `fix:`, `docs:`, `test:`, `chore:` …).
 
 ## 📄 License
 
@@ -188,13 +106,11 @@ Please use the [GitHub Issues](../../issues) page to:
 
 ## 🎯 Roadmap
 
-- [ ] Machine learning-based content detection
-- [ ] Social media integration
-- [ ] Mobile browser support
-- [ ] Community filter sharing
-- [ ] Advanced analytics dashboard
-- [ ] Voice command controls
-- [ ] Collaborative filtering networks
+- [ ] Chrome Web Store / AMO listings (signed builds)
+- [ ] Scheduled (time-based) filtering
+- [ ] Per-site filter lists and custom CSS effects
+- [ ] Rust/WASM `zen-core` (see [ZEN-288](docs/architecture/ZEN-288-minimal-deps-pivot.md))
+- [ ] Community filter list sharing
 
 ## 💫 Inspired by zenOS Philosophy
 

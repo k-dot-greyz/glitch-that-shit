@@ -2,53 +2,57 @@
  * chrome.storage.sync wrapper for ZenProfile state.
  * Cross-instance sync: popup ↔ content script ↔ background.
  *
+ * - Reads are sanitized (sanitizeProfile) — storage is a trust boundary.
+ * - setProfile() read-modify-writes are serialized through a promise chain so
+ *   rapid slider/button input can't lose updates (supersedes PR #17/#18).
+ * - onChange ignores deletions (newValue undefined, e.g. sync cleared).
+ *
  * dex_id: 0x7E:0x32
  * Refs: glitch-that-shit#2
  */
 
-import { ZenProfile, DEFAULT_PROFILE } from './site-profile.schema';
+import { ZenProfile, DEFAULT_PROFILE, sanitizeProfile } from './site-profile.schema';
 
 const STORAGE_KEY = 'zenProfile';
 
-/**
- * Serialises concurrent setProfile calls so that each write always reads the
- * state that the previous write committed.  Without this, two rapid UI
- * interactions (e.g. clicking a mode button while dragging a slider) both read
- * the same stale profile and the second write silently overwrites the first
- * write's change.
- */
-let _writeChain: Promise<void> = Promise.resolve();
+let writeChain: Promise<void> = Promise.resolve();
 
 export const storage = {
   async getProfile(): Promise<ZenProfile> {
-    const data = await chrome.storage.sync.get(STORAGE_KEY);
-    return (data[STORAGE_KEY] as ZenProfile) ?? DEFAULT_PROFILE;
+    try {
+      const data = await chrome.storage.sync.get(STORAGE_KEY);
+      const raw = data?.[STORAGE_KEY];
+      return raw == null ? DEFAULT_PROFILE : sanitizeProfile(raw);
+    } catch {
+      return DEFAULT_PROFILE; // storage unavailable → safe defaults
+    }
   },
 
-  async setProfile(patch: Partial<ZenProfile>): Promise<void> {
-    const pending = _writeChain
-      .catch(() => {})  // a previous write failure must not block the queue
+  setProfile(patch: Partial<ZenProfile>): Promise<void> {
+    const next = writeChain
+      .catch(() => {})
       .then(async () => {
-        const data = await chrome.storage.sync.get(STORAGE_KEY);
-        const current = (data[STORAGE_KEY] as ZenProfile) ?? DEFAULT_PROFILE;
-        await chrome.storage.sync.set({
-          [STORAGE_KEY]: { ...current, ...patch },
-        });
+        const current = await storage.getProfile();
+        await chrome.storage.sync.set({ [STORAGE_KEY]: sanitizeProfile({ ...current, ...patch }) });
       });
-    _writeChain = pending;
-    return pending;
+    writeChain = next;
+    return next;
   },
 
-  async resetProfile(): Promise<void> {
-    await chrome.storage.sync.set({ [STORAGE_KEY]: DEFAULT_PROFILE });
+  resetProfile(): Promise<void> {
+    const next = writeChain
+      .catch(() => {})
+      .then(() => chrome.storage.sync.set({ [STORAGE_KEY]: DEFAULT_PROFILE }));
+    writeChain = next;
+    return next;
   },
 
   /** Subscribe to profile changes — fires whenever popup or another tab updates. */
   onChange(callback: (profile: ZenProfile) => void): void {
     chrome.storage.onChanged.addListener((changes, area) => {
-      if (area === 'sync' && changes[STORAGE_KEY]) {
-        callback(changes[STORAGE_KEY].newValue as ZenProfile);
-      }
+      const change = changes[STORAGE_KEY];
+      if (area !== 'sync' || !change || change.newValue == null) return;
+      callback(sanitizeProfile(change.newValue));
     });
   },
 };

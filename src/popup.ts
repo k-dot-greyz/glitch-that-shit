@@ -10,69 +10,172 @@
 import { storage } from './storage';
 import { ZenProfile, DEFAULT_PROFILE, SensoryMode, ColorBlindMode } from './site-profile.schema';
 import { generateThemeVariables } from './theme-registry';
+import { configStore } from './config-store';
+import { EFFECTS, INTENSITIES, EffectType, Intensity, GlitchConfig, isSiteDisabled, normalizeHost } from './glitch-config';
+import { EFFECT_LABELS } from './effects';
+import type { StatusResponse } from './messages';
 
-async function renderPopup(): Promise<void> {
-  const profile = await storage.getProfile();
+function el<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  props: Partial<HTMLElementTagNameMap[K]> & Record<string, unknown> = {},
+  children: (Node | string)[] = [],
+): HTMLElementTagNameMap[K] {
+  const node = document.createElement(tag);
+  Object.assign(node, props);
+  node.append(...children);
+  return node;
+}
 
-  document.body.innerHTML = `
+async function activeTab(): Promise<{ id?: number; url?: string } | null> {
+  try {
+    const [tab] = (await chrome.tabs?.query({ active: true, currentWindow: true })) ?? [];
+    return tab ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Filter controls (enable, effect, intensity, quick-add, per-site pause). Built with DOM APIs — no user data in innerHTML. */
+export async function renderGlitchSection(root: HTMLElement): Promise<void> {
+  let config: GlitchConfig = await configStore.get();
+  const tab = await activeTab();
+  const host = tab?.url ? normalizeHost(tab.url) : null;
+
+  const enabled = el('input', { type: 'checkbox', id: 'chk-enabled', checked: config.enabled });
+  const effect = el('select', { id: 'sel-effect', className: 'gts-select' },
+    EFFECTS.map((e) => el('option', { value: e, selected: e === config.effect }, [EFFECT_LABELS[e]])));
+  const intensity = el('select', { id: 'sel-intensity', className: 'gts-select' },
+    INTENSITIES.map((i) => el('option', { value: i, selected: i === config.intensity }, [i])));
+  const input = el('input', { type: 'text', id: 'inp-filter', className: 'gts-input', placeholder: 'word, phrase or /regex/i', maxLength: 200 });
+  const add = el('button', { id: 'btn-add-filter', className: 'gts-btn', type: 'submit' }, ['+ glitch']);
+  const msg = el('div', { id: 'filter-msg', className: 'gts-msg', role: 'status' });
+  const form = el('form', { id: 'form-add-filter', className: 'gts-row' }, [input, add]);
+  const site = el('input', { type: 'checkbox', id: 'chk-site', disabled: !host, checked: !!host && !isSiteDisabled(host, config.disabledSites) });
+  const hits = el('span', { id: 'val-hits', className: 'zen-val' }, ['–']);
+  const settings = el('button', { id: 'btn-settings', className: 'gts-btn', type: 'button' }, ['settings ⚙']);
+
+  root.replaceChildren(
+    el('label', { className: 'zen-check gts-master' }, [enabled, ' Glitching enabled']),
+    el('div', { className: 'gts-row' }, [effect, intensity]),
+    form,
+    msg,
+    el('div', { className: 'gts-row gts-between' }, [
+      el('label', { className: 'zen-check' }, [site, ` Active on ${host ?? 'this page'}`]),
+      el('span', { className: 'gts-count' }, ['hits on page: ', hits]),
+    ]),
+    el('div', { className: 'gts-row gts-between' }, [
+      el('span', { className: 'gts-count', id: 'val-filter-count' }, [`${config.filters.length} filters`]),
+      settings,
+    ]),
+  );
+
+  const save = async (patch: Partial<GlitchConfig>) => {
+    const res = await configStore.update(patch);
+    config = res.config;
+    document.getElementById('val-filter-count')!.textContent = `${config.filters.length} filters`;
+    return res;
+  };
+
+  enabled.addEventListener('change', () => save({ enabled: enabled.checked }));
+  effect.addEventListener('change', () => save({ effect: effect.value as EffectType }));
+  intensity.addEventListener('change', () => save({ intensity: intensity.value as Intensity }));
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const value = input.value.trim();
+    if (!value) return;
+    const before = config.filters.length;
+    const res = await save({ filters: [...config.filters, value] });
+    if (res.config.filters.length > before) {
+      msg.textContent = `added “${value}”`;
+      msg.dataset.kind = 'ok';
+      input.value = '';
+    } else {
+      msg.textContent = res.errors[0]?.replace(/^filter "[^"]*": /, '') ?? 'already in your list';
+      msg.dataset.kind = 'error';
+    }
+  });
+  site.addEventListener('change', () => {
+    if (!host) return;
+    const rest = config.disabledSites.filter((s) => !(host === s || host.endsWith(`.${s}`)));
+    save({ disabledSites: site.checked ? rest : [...rest, host] });
+  });
+  settings.addEventListener('click', () => chrome.runtime?.openOptionsPage?.());
+
+  if (tab?.id != null) {
+    try {
+      chrome.tabs
+        ?.sendMessage(tab.id, { type: 'gts:status' })
+        ?.then((r: StatusResponse | undefined) => {
+          if (r) hits.textContent = String(r.hits);
+        })
+        ?.catch(() => {});
+    } catch {
+      /* no content script on this page (chrome://, store pages) */
+    }
+  }
+}
+
+/** Static markup only — every dynamic value is applied through DOM properties in hydrate(). */
+const POPUP_TEMPLATE = `
     <div class="zen-popup">
       <header>
         <span class="zen-logo">⚡</span>
         <span class="zen-title">glitch-that-shit</span>
-        <button id="btn-reset" title="Reset to defaults">↺</button>
+        <button id="btn-reset" title="Reset zenOS profile to defaults">↺</button>
       </header>
+
+      <section class="zen-section gts-section" id="glitch-section" aria-label="Filtering"></section>
+
+      <div class="zen-label">zenOS sensory profile</div>
 
       <section class="zen-section">
         <label class="zen-label">SENSORY MODE</label>
         <div class="zen-toggle-group" id="sensory-group">
-          ${(['default','calm','glitch','high-contrast'] as SensoryMode[]).map(m => `
-            <button class="zen-toggle ${profile.sensoryMode === m ? 'active' : ''}"
-                    data-sensory="${m}">${m}</button>
-          `).join('')}
+          <button class="zen-toggle" data-sensory="default">default</button>
+          <button class="zen-toggle" data-sensory="calm">calm</button>
+          <button class="zen-toggle" data-sensory="glitch">glitch</button>
+          <button class="zen-toggle" data-sensory="high-contrast">high-contrast</button>
         </div>
       </section>
 
       <section class="zen-section">
         <label class="zen-label">COLORBLIND MODE</label>
         <div class="zen-toggle-group" id="colorblind-group">
-          ${(['none','protanopia','deuteranopia','tritanopia'] as ColorBlindMode[]).map(m => `
-            <button class="zen-toggle ${profile.colorBlindMode === m ? 'active' : ''}"
-                    data-colorblind="${m}">${m}</button>
-          `).join('')}
+          <button class="zen-toggle" data-colorblind="none">none</button>
+          <button class="zen-toggle" data-colorblind="protanopia">protanopia</button>
+          <button class="zen-toggle" data-colorblind="deuteranopia">deuteranopia</button>
+          <button class="zen-toggle" data-colorblind="tritanopia">tritanopia</button>
         </div>
       </section>
 
       <section class="zen-section">
-        <label class="zen-label">LIGHTNESS
-          <span class="zen-val" id="val-lightness">${profile.baseLightness.toFixed(2)}</span>
+        <label class="zen-label" for="slider-lightness">LIGHTNESS
+          <span class="zen-val" id="val-lightness"></span>
         </label>
-        <input type="range" id="slider-lightness" min="0.08" max="0.35" step="0.01"
-               value="${profile.baseLightness}" />
+        <input type="range" id="slider-lightness" min="0.08" max="0.35" step="0.01" />
       </section>
 
       <section class="zen-section">
-        <label class="zen-label">CHROMA (saturation)
-          <span class="zen-val" id="val-chroma">${profile.maxChroma.toFixed(3)}</span>
+        <label class="zen-label" for="slider-chroma">CHROMA (saturation)
+          <span class="zen-val" id="val-chroma"></span>
         </label>
-        <input type="range" id="slider-chroma" min="0.00" max="0.18" step="0.005"
-               value="${profile.maxChroma}" />
+        <input type="range" id="slider-chroma" min="0.00" max="0.18" step="0.005" />
       </section>
 
       <section class="zen-section">
-        <label class="zen-label">HUE
-          <span class="zen-val" id="val-hue">${Math.round(profile.baseHue)}°</span>
+        <label class="zen-label" for="slider-hue">HUE
+          <span class="zen-val" id="val-hue"></span>
         </label>
-        <input type="range" id="slider-hue" min="0" max="360" step="1"
-               value="${profile.baseHue}" />
+        <input type="range" id="slider-hue" min="0" max="360" step="1" />
       </section>
 
       <section class="zen-section zen-toggles">
         <label class="zen-check">
-          <input type="checkbox" id="chk-motion" ${profile.reduceMotion ? 'checked' : ''} />
+          <input type="checkbox" id="chk-motion" />
           Reduce motion
         </label>
         <label class="zen-check">
-          <input type="checkbox" id="chk-hdr" ${profile.dynamicRangeClamp ? 'checked' : ''} />
+          <input type="checkbox" id="chk-hdr" />
           HDR chroma clamp
         </label>
       </section>
@@ -81,7 +184,38 @@ async function renderPopup(): Promise<void> {
         <span class="zen-preview-text">Preview</span>
       </div>
     </div>
-  `;
+`;
+
+function hydrate(profile: ZenProfile): void {
+  document.querySelectorAll<HTMLElement>('[data-sensory]').forEach((b) => {
+    b.classList.toggle('active', b.dataset.sensory === profile.sensoryMode);
+    b.setAttribute('aria-pressed', String(b.dataset.sensory === profile.sensoryMode));
+  });
+  document.querySelectorAll<HTMLElement>('[data-colorblind]').forEach((b) => {
+    b.classList.toggle('active', b.dataset.colorblind === profile.colorBlindMode);
+    b.setAttribute('aria-pressed', String(b.dataset.colorblind === profile.colorBlindMode));
+  });
+  const setRange = (id: string, v: number) => {
+    const input = document.getElementById(id) as HTMLInputElement;
+    input.value = String(v);
+    input.setAttribute('value', String(v));
+  };
+  setRange('slider-lightness', profile.baseLightness);
+  setRange('slider-chroma', profile.maxChroma);
+  setRange('slider-hue', profile.baseHue);
+  document.getElementById('val-lightness')!.textContent = profile.baseLightness.toFixed(2);
+  document.getElementById('val-chroma')!.textContent = profile.maxChroma.toFixed(3);
+  document.getElementById('val-hue')!.textContent = `${Math.round(profile.baseHue)}°`;
+  (document.getElementById('chk-motion') as HTMLInputElement).checked = profile.reduceMotion;
+  (document.getElementById('chk-hdr') as HTMLInputElement).checked = profile.dynamicRangeClamp;
+}
+
+async function renderPopup(): Promise<void> {
+  const profile = await storage.getProfile();
+
+  // Parsed inert (DOMParser doesn't run scripts) from a static string, then adopted.
+  document.body.replaceChildren(...new DOMParser().parseFromString(POPUP_TEMPLATE, 'text/html').body.childNodes);
+  hydrate(profile);
 
   // Inject popup's own theme preview — reuse existing element to avoid cascade poisoning on re-render.
   // If renderPopup() is called again (e.g. reset), a second element with the same ID would be
@@ -96,6 +230,8 @@ async function renderPopup(): Promise<void> {
   }
   previewStyle.textContent = generateThemeVariables(profile);
 
+  renderGlitchSection(document.getElementById('glitch-section')!).catch(() => {});
+
   // Wire controls
   const update = async (patch: Partial<ZenProfile>) => {
     await storage.setProfile(patch);
@@ -108,8 +244,9 @@ async function renderPopup(): Promise<void> {
   document.getElementById('sensory-group')!.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest('[data-sensory]') as HTMLElement;
     if (!btn) return;
-    document.querySelectorAll('[data-sensory]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('[data-sensory]').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
     btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
     update({ sensoryMode: btn.dataset.sensory as SensoryMode });
   });
 
@@ -117,8 +254,9 @@ async function renderPopup(): Promise<void> {
   document.getElementById('colorblind-group')!.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest('[data-colorblind]') as HTMLElement;
     if (!btn) return;
-    document.querySelectorAll('[data-colorblind]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('[data-colorblind]').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
     btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
     update({ colorBlindMode: btn.dataset.colorblind as ColorBlindMode });
   });
 
