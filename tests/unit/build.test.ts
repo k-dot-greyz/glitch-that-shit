@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -25,7 +26,7 @@ describe('esbuild packager', () => {
     const fx = manifestFor('firefox', base);
     expect(fx.version_name).toBeUndefined();
     expect(fx.background).toEqual({ scripts: ['background.js'] });
-    expect(fx.browser_specific_settings.gecko.id).toBe('glitch-that-shit@k-dot-greyz');
+    expect(fx.browser_specific_settings?.gecko.id).toBe('glitch-that-shit@k-dot-greyz');
     expect(base.version_name).toBe('0.3.0-rc.1');
   });
 });
