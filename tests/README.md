@@ -12,7 +12,8 @@ tests/
     ├── settings-bundle.test.ts                                    # export/import validation
     ├── content*.test.ts                                           # content script (theme loop + glitch integration)
     ├── background.test.ts, popup*.test.ts, options.test.ts        # extension surfaces
-    └── site-profile.schema.test.ts, theme-registry.test.ts
+    ├── site-profile.schema.test.ts, theme-registry.test.ts
+    └── pr23-glitch-rises-ux-security.test.ts   # GT-PR23-* feat #23 follow-up (IPC, import, manifest)
 ```
 
 ```bash
