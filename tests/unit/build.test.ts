@@ -2,7 +2,7 @@
 import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { bundleScripts, ENTRIES, manifestFor } from '../../scripts/build.mjs';
+import { bundleScripts, ENTRIES, manifestFor, resolveBuildTargets } from '../../scripts/build.mjs';
 
 describe('esbuild packager', () => {
   it('emits one IIFE per entry with no leftover ESM imports', async () => {
@@ -16,6 +16,10 @@ describe('esbuild packager', () => {
       expect(js).not.toMatch(/\bimport\s+/);
       expect(js).not.toMatch(/\bexport\s+/);
     }
+  });
+
+  it('rejects unknown --target values (fail closed)', () => {
+    expect(() => resolveBuildTargets('evil')).toThrow(/Unknown --target/);
   });
 
   it('derives a Firefox manifest without version_name and with gecko id', () => {

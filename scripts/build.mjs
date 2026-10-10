@@ -25,7 +25,17 @@ const dist = join(root, 'dist');
 const args = process.argv.slice(2);
 const noZip = args.includes('--no-zip');
 const targetArg = args.includes('--target') ? args[args.indexOf('--target') + 1] : null;
-const TARGETS = targetArg ? [targetArg] : ['chrome', 'firefox'];
+const ALLOWED_TARGETS = new Set(['chrome', 'firefox']);
+
+export function resolveBuildTargets(target) {
+  if (target == null) return ['chrome', 'firefox'];
+  if (!ALLOWED_TARGETS.has(target)) {
+    throw new Error(`Unknown --target "${target}". Expected one of: ${[...ALLOWED_TARGETS].join(', ')}`);
+  }
+  return [target];
+}
+
+const TARGETS = resolveBuildTargets(targetArg);
 
 export const ENTRIES = {
   content: 'src/content.ts',
@@ -86,12 +96,16 @@ export async function bundleScripts(outDir) {
   );
 }
 
-async function main() {
-  const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
-  const base = JSON.parse(await readFile(join(root, 'manifest.json'), 'utf8'));
+export function assertPackageManifestVersions(pkg, base) {
   if (base.version_name && base.version_name !== pkg.version) {
     throw new Error(`manifest.version_name (${base.version_name}) != package.json version (${pkg.version})`);
   }
+}
+
+async function main() {
+  const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+  const base = JSON.parse(await readFile(join(root, 'manifest.json'), 'utf8'));
+  assertPackageManifestVersions(pkg, base);
 
   await rm(dist, { recursive: true, force: true });
   const js = join(dist, '.js');
