@@ -13,6 +13,7 @@ tests/
     ├── content*.test.ts                                           # content script (theme loop + glitch integration)
     ├── background.test.ts, popup*.test.ts, options.test.ts        # extension surfaces
     ├── build.test.ts                                                  # esbuild IIFE packager
+    ├── pr21-zen288-esbuild-ux-security.test.ts                        # GT-PR21 ZEN-288 packager + pins
     └── site-profile.schema.test.ts, theme-registry.test.ts
 ```
 

@@ -18,3 +18,8 @@ export interface DerivedManifest {
 
 export function manifestFor(target: string, base: object): DerivedManifest;
 export function bundleScripts(outDir: string): Promise<void>;
+export function resolveBuildTargets(target: string | null): string[];
+export function assertPackageManifestVersions(
+  pkg: { version: string },
+  base: { version_name?: string },
+): void;
