@@ -4,6 +4,7 @@
 tests/
 ├── helpers/
 │   ├── setup.ts            # chrome.* mocks (storage.sync/local, runtime, tabs) + matchMedia
+│   ├── ci-workflow-harness.ts  # CI YAML contract parsing (upload-artifact, permissions)
 │   └── raw.d.ts            # `?raw` import typing (options.html fixture)
 └── unit/                   # Vitest + jsdom
     ├── glitch-config.test.ts, matcher.test.ts, effects.test.ts   # pure logic
@@ -13,6 +14,7 @@ tests/
     ├── content*.test.ts                                           # content script (theme loop + glitch integration)
     ├── background.test.ts, popup*.test.ts, options.test.ts        # extension surfaces
     ├── build.test.ts                                                  # esbuild IIFE packager
+    ├── upload-artifact-pr26-ux-security.test.ts                       # CI artifact pin + scope (PR #26)
     └── site-profile.schema.test.ts, theme-registry.test.ts
 ```
 
