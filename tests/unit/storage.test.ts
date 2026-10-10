@@ -4,8 +4,8 @@
  * Uses the chrome mock installed in tests/helpers/setup.ts.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { storage } from '../../src/storage';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { storage, _resetStorageForTest } from '../../src/storage';
 import { DEFAULT_PROFILE } from '../../src/site-profile.schema';
 import type { ZenProfile } from '../../src/site-profile.schema';
 
@@ -20,6 +20,7 @@ function clearStorage() {
     delete storageData[k];
   }
   storageListeners.length = 0;
+  _resetStorageForTest();
 }
 
 beforeEach(() => {
@@ -253,5 +254,87 @@ describe('storage.setProfile — write serialisation', () => {
     expect(stored.sensoryMode).toBe('high-contrast');
     expect(stored.colorBlindMode).toBe('tritanopia');
     expect(stored.baseLightness).toBe(0.28);
+  });
+});
+
+function applySyncSet(items: Record<string, unknown>) {
+  for (const [k, v] of Object.entries(items)) {
+    const oldValue = storageData[k];
+    storageData[k] = v;
+    storageListeners.forEach((l) => l({ [k]: { oldValue, newValue: v } }, 'sync'));
+  }
+}
+
+// Write-chain serialisation still leaves getProfile stale until chrome.storage.set
+// unblocks, and a slow earlier set() can clobber a newer merged profile.
+// Write-through cache + coalesced flush: patches merge synchronously; storage
+// always persists the latest in-memory profile.
+describe('storage.setProfile — write-through cache + coalesced flush', () => {
+  afterEach(() => {
+    (chrome.storage.sync.set as ReturnType<typeof vi.fn>).mockImplementation(
+      async (items: Record<string, unknown>) => {
+        applySyncSet(items);
+      },
+    );
+  });
+
+  it('getProfile returns merged patches while chrome.storage.set is still in flight', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    (chrome.storage.sync.set as ReturnType<typeof vi.fn>).mockImplementation(
+      async (items: Record<string, unknown>) => {
+        await gate;
+        applySyncSet(items);
+      },
+    );
+
+    const p1 = storage.setProfile({ baseHue: 270 });
+    const p2 = storage.setProfile({ sensoryMode: 'glitch' });
+
+    const live = await storage.getProfile();
+    expect(live.baseHue).toBe(270);
+    expect(live.sensoryMode).toBe('glitch');
+    expect(storageData['zenProfile']).toBeUndefined();
+
+    release();
+    await Promise.all([p1, p2]);
+
+    const stored = storageData['zenProfile'] as ZenProfile;
+    expect(stored.baseHue).toBe(270);
+    expect(stored.sensoryMode).toBe('glitch');
+  });
+
+  it('a slower first chrome.storage.set cannot clobber a newer merged profile', async () => {
+    let setCalls = 0;
+    (chrome.storage.sync.set as ReturnType<typeof vi.fn>).mockImplementation(
+      async (items: Record<string, unknown>) => {
+        const n = ++setCalls;
+        if (n === 1) await new Promise((r) => setTimeout(r, 30));
+        applySyncSet(items);
+      },
+    );
+
+    await Promise.all([
+      storage.setProfile({ baseHue: 270 }),
+      storage.setProfile({ sensoryMode: 'glitch' }),
+    ]);
+
+    const stored = storageData['zenProfile'] as ZenProfile;
+    expect(stored.baseHue).toBe(270);
+    expect(stored.sensoryMode).toBe('glitch');
+  });
+
+  it('clears the in-memory cache when the sync key is deleted', async () => {
+    await storage.setProfile({ baseHue: 99 });
+    delete storageData['zenProfile'];
+
+    const changes: Record<string, chrome.storage.StorageChange> = {
+      zenProfile: { oldValue: { ...DEFAULT_PROFILE, baseHue: 99 } } as chrome.storage.StorageChange,
+    };
+    storageListeners.forEach((l) => l(changes, 'sync'));
+
+    await expect(storage.getProfile()).resolves.toEqual(DEFAULT_PROFILE);
   });
 });
