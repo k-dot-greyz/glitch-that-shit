@@ -1,0 +1,51 @@
+# ZEN-288: freeze major npm bumps. The shipped extension has zero runtime
+# npm packages — these groups are all dev/test/CI. Majors wait for an
+# intentional toolchain PR (see docs/architecture/ZEN-288-minimal-deps-pivot.md).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      packager:
+        patterns:
+          - esbuild
+        update-types:
+          - minor
+          - patch
+      test-runner:
+        patterns:
+          - vitest
+          - '@vitest/*'
+          - jsdom
+          - vite
+        update-types:
+          - minor
+          - patch
+      types:
+        patterns:
+          - '@types/*'
+          - typescript
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: esbuild
+        update-types: ['version-update:semver-major']
+      - dependency-name: vitest
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@vitest/coverage-v8'
+        update-types: ['version-update:semver-major']
+      - dependency-name: vite
+        update-types: ['version-update:semver-major']
+      - dependency-name: jsdom
+        update-types: ['version-update:semver-major']
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

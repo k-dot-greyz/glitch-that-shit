@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow SemVer (pre-releases as `-rc.N`; the browser manifest carries `version` 0.3.0 + `version_name` 0.3.0-rc.1).
 
+## [Unreleased]
+
+### Changed
+- Production packager is **esbuild** (one readable IIFE per MV3 entry). Vite stays pinned only as a Vitest peer — tests still use `vi.mock` / `vi.resetModules` (ZEN-288 Phase 3a).
+- Exact pins: `esbuild` 0.28.2, `jsdom` 28.1.0, `@types/chrome` 0.3.4, `vitest` / `@vitest/coverage-v8` 4.1.11, `vite` 8.3.3. TypeScript stays **5.9.3** (TS 7 is a major). jsdom 30 was skipped — it requires Node 22.22.2 / 24.15, which breaks the `^20.19 || >=22.12` floor.
+- `engines.node` is `^20.19.0 || >=22.12.0` (matches `install.sh`; CI reads `.nvmrc` → 24).
+- Dependabot: weekly npm + GitHub Actions, grouped by packager / test-runner / types, **majors frozen**.
+
 ## [0.3.0-rc.1] — 2026-10-04
 
 First release candidate: the word/phrase glitch engine is back, now on the TypeScript + zenOS stack, with a real build and installer.

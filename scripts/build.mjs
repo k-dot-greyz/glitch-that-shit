@@ -6,11 +6,13 @@
  *   node scripts/build.mjs --no-zip   → unpacked dirs only
  *   node scripts/build.mjs --target chrome
  *
- * Each TS entry is bundled to a self-contained IIFE with Vite (content scripts
+ * Each TS entry is bundled to a self-contained IIFE with esbuild (content scripts
  * and classic service workers can't use ES module chunks). Output is
  * deterministic: no timestamps, no hashes, sorted zip entries.
+ *
+ * Vite is not the packager — it stays in package.json only as a Vitest peer.
  */
-import { build } from 'vite';
+import * as esbuild from 'esbuild';
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { dirname, join, relative } from 'node:path';
@@ -25,7 +27,12 @@ const noZip = args.includes('--no-zip');
 const targetArg = args.includes('--target') ? args[args.indexOf('--target') + 1] : null;
 const TARGETS = targetArg ? [targetArg] : ['chrome', 'firefox'];
 
-const ENTRIES = { content: 'src/content.ts', background: 'src/background.ts', popup: 'src/popup.ts', options: 'src/options.ts' };
+export const ENTRIES = {
+  content: 'src/content.ts',
+  background: 'src/background.ts',
+  popup: 'src/popup.ts',
+  options: 'src/options.ts',
+};
 const STATIC = [['src/popup.html', 'popup.html'], ['src/options.html', 'options.html'], ['icons', 'icons'], ['LICENSE', 'LICENSE']];
 
 export function manifestFor(target, base) {
@@ -55,24 +62,28 @@ async function listFiles(dir) {
   return out;
 }
 
-async function bundleScripts(outDir) {
-  for (const [name, entry] of Object.entries(ENTRIES)) {
-    await build({
-      root,
-      configFile: false,
-      logLevel: 'warn',
-      publicDir: false,
-      build: {
-        outDir,
-        emptyOutDir: false,
+/** Bundle each MV3 entry to a readable, self-contained IIFE. */
+export async function bundleScripts(outDir) {
+  await mkdir(outDir, { recursive: true });
+  await Promise.all(
+    Object.entries(ENTRIES).map(([name, entry]) =>
+      esbuild.build({
+        absWorkingDir: root,
+        entryPoints: [join(root, entry)],
+        outfile: join(outDir, `${name}.js`),
+        bundle: true,
+        format: 'iife',
+        globalName: `gts_${name}`,
+        platform: 'browser',
+        target: 'es2022',
         minify: false, // readable for review (dev-master dex protocol)
         sourcemap: false,
-        target: 'es2022',
-        reportCompressedSize: false,
-        lib: { entry: join(root, entry), formats: ['iife'], name: `gts_${name}`, fileName: () => `${name}.js` },
-      },
-    });
-  }
+        keepNames: true,
+        legalComments: 'none',
+        logLevel: 'warning',
+      }),
+    ),
+  );
 }
 
 async function main() {
@@ -114,7 +125,9 @@ async function main() {
   console.log(`glitch-that-shit ${pkg.version}\n${summary.join('\n')}`);
 }
 
-main().catch((e) => {
-  console.error(e.message ?? e);
-  process.exit(1);
-});
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch((e) => {
+    console.error(e.message ?? e);
+    process.exit(1);
+  });
+}

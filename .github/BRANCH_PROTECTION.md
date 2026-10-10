@@ -8,7 +8,7 @@ Enable **Require status checks to pass before merging** and require:
 
 | Check name | Workflow | Purpose |
 |------------|----------|---------|
-| `Lint, test, and build` | [ci.yml](workflows/ci.yml) | Typecheck, Vitest, Vite build |
+| `Lint, test, and build` | [ci.yml](workflows/ci.yml) | Typecheck, Vitest, esbuild packager |
 | `Analyze (javascript-typescript)` | [codeql.yml](workflows/codeql.yml) | JS/TS security analysis |
 | `Analyze (actions)` | [codeql.yml](workflows/codeql.yml) | GitHub Actions workflow security |
 

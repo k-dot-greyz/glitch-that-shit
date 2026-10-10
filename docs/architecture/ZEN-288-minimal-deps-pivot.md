@@ -1,6 +1,6 @@
 # ZEN-288: Minimal-Dependency Architecture Pivot
 
-> **Status:** Investigation complete — architecture proposal (draft)  
+> **Status:** Phase 1 complete (`#23`). Phase 3a in progress — production packager is esbuild; Vite is a Vitest peer only. Dependabot majors frozen.  
 > **Tracking:** [glitch-that-shit#13](https://github.com/k-dot-greyz/glitch-that-shit/issues/13) · [Linear ZEN-288](https://linear.app/zenos/issue/ZEN-288)  
 > **Triggered by:** Dependabot PR [#7](https://github.com/k-dot-greyz/glitch-that-shit/pull/7) (vite 5.4.21 → 8.0.10)
 
@@ -168,20 +168,20 @@ Dependabot correctly bumps `vite`. But the **review burden** implies we are chan
 
 ### 4.3 Phased migration plan
 
-#### Phase 0 — Hygiene (this PR's scope)
+#### Phase 0 — Hygiene (landed in `#14` + this PR)
 
 - [x] Document problem statement and architecture (this file)
-- [ ] Re-hydrate GitHub issue #13 with structured description
-- [ ] Close/reject future Dependabot major bumps until build strategy is decided
-- [ ] Add `dependabot.yml` group rules: separate `dev-tooling` from `runtime` (none expected)
+- [ ] Re-hydrate GitHub issue #13 with structured description (permissions; still open as a title update)
+- [x] Close/reject future Dependabot major bumps until build strategy is decided
+- [x] Add `dependabot.yml` group rules: packager / test-runner / types; freeze majors (no runtime npm packages)
 
-#### Phase 1 — Consolidate source tree (low risk)
+#### Phase 1 — Consolidate source tree (landed in `#23`)
 
-- Delete unused legacy JS (`src/content/content.js`, `src/popup/popup.js`, `src/options/*`, `src/background/*`, `src/shared/utils.js`) after confirming manifest references
-- Update `CONTRIBUTING.md` stack table to match reality (Vite/TS/Vitest today; target state documented)
-- Pin `vite` to current working version; disable grouped major bumps
+- [x] Delete unused legacy JS (`src/content/content.js`, `src/popup/popup.js`, `src/options/*`, `src/background/*`, `src/shared/utils.js`) after confirming manifest references
+- [x] Update `CONTRIBUTING.md` stack table to match reality
+- [x] Pin tooling to exact versions; disable grouped major bumps
 
-**Exit criteria:** Single canonical source tree, docs match code, tests green.
+**Exit criteria:** Single canonical source tree, docs match code, tests green. **Met.**
 
 #### Phase 2 — Extract `zen-core` Rust crate
 
@@ -194,13 +194,21 @@ Dependabot correctly bumps `vite`. But the **review burden** implies we are chan
 
 **Exit criteria:** `theme-registry.ts` reduced to a 10-line WASM loader.
 
-#### Phase 3 — Replace Vite with Rust packager
+#### Phase 3a — esbuild packager (this PR; JS stepping stone)
+
+- [x] `scripts/build.mjs` bundles with **esbuild** (one IIFE per entry). No Vite `build()` API, no HMR, no `vite.config.ts`.
+- [x] Vite remains a **direct pin only because Vitest's peer range requires it**. It is not on the production path.
+- [x] Keep Vitest for `vi.mock` / `vi.resetModules` tests (popup/content bootstrap). Do not rewrite the suite in this step.
+
+**Exit criteria:** Production zip path does not import `vite`. **Met.** Rust `glitch-pack` can replace the esbuild call later without touching tests.
+
+#### Phase 3 — Replace esbuild with Rust packager
 
 - `tools/glitch-pack` (Rust):
   - Invokes `wasm-pack build`
-  - Runs `tsc` with `emit` enabled (or uses `esbuild` as optional single-binary dep inside the Rust tool — **not** in `package.json`)
+  - Runs `tsc` with `emit` enabled (or shells out to the already-pinned `esbuild` binary — **not** a new npm stack)
   - Outputs `dist/` matching MV3 layout
-- Remove `vite`, `@crxjs/vite-plugin` from `package.json`
+- Remove `vite` from `package.json` once Vitest is gone (Phase 4); `@crxjs/vite-plugin` already removed in `#23`
 - Dev loop: `cargo run -p glitch-pack -- dev --watch` (uses `notify` crate for rebuild)
 
 **Exit criteria:** `npm install` no longer required for build. `package.json` removed or reduced to optional test harness only.
@@ -221,7 +229,7 @@ Dependabot correctly bumps `vite`. But the **review burden** implies we are chan
 |----------|--------|-----------|
 | Extension runtime language | Minimal TS/JS glue | Chrome extension APIs are JS-only; fighting this adds cost |
 | Pure computation | Rust → WASM | Type-safe, fast, testable without jsdom; matches dev-master Rust-first stack |
-| Bundler | Remove Vite (Phase 3) | CRX packaging is copy + manifest rewrite, not a SPA build |
+| Bundler | esbuild IIFE (Phase 3a) → Rust `glitch-pack` (Phase 3) | CRX packaging is copy + manifest rewrite, not a SPA build. Vite is a test peer only |
 | Test runner | Rust tests primary; keep Vitest during Phase 1–2 | Don't block migration on rewriting 1,400 LOC of tests day one |
 | Legacy JS | Delete in Phase 1 | Dead code confuses contributors and inflates review scope |
 | Dependabot | Freeze major npm bumps | Until Phase 3 completes; security patches for dev tools are low priority vs. product |
@@ -242,8 +250,8 @@ Dependabot correctly bumps `vite`. But the **review burden** implies we are chan
 
 ## 7. Immediate recommendations
 
-1. **Do not merge** further grouped Dependabot major bumps for `vite` / `vitest` until Phase 1 lands.
-2. **Approve Phase 1** as the next implementation PR — delete legacy JS, fix docs, pin tooling.
+1. **Phase 1 is done.** Do not merge grouped Dependabot *majors* (config in `.github/dependabot.yml`).
+2. **Phase 3a is this PR** — esbuild packager, Vite demoted to Vitest peer, current-stable pins within 5.x / 8.x / 4.x / 30.x.
 3. **Scope Phase 2** as a separate epic under ZEN-288 with `crates/zen-core` scaffold.
 4. **Update issue #13** title to: `ZEN-288: Pivot build toolchain to Rust — eliminate npm dependency sprawl`
 
@@ -260,31 +268,22 @@ Dependabot correctly bumps `vite`. But the **review burden** implies we are chan
 
 ## Appendix A: File deletion candidates (Phase 1)
 
-| File | Status | Action |
-|------|--------|--------|
-| `src/content/content.js` | Not in manifest | Delete |
-| `src/content/content.css` | Orphaned? | Audit → delete or merge |
-| `src/popup/popup.js` | Not in manifest | Delete |
-| `src/popup/popup.html` | Not in manifest | Delete |
-| `src/popup/popup.css` | Not in manifest | Delete |
-| `src/options/*` | Not in manifest | Delete |
-| `src/background/background.js` | Not in manifest | Delete |
-| `src/shared/utils.js` | Not imported by TS | Delete |
+Deleted in `#23`. This appendix is historical.
 
 ## Appendix B: Current vs target `package.json`
 
-**Current (7 direct deps, 188 transitive):**
+**Phase 3a (this PR) — 7 direct deps, Vite is a test peer:**
 
 ```json
 {
   "devDependencies": {
-    "@crxjs/vite-plugin": "^2.7.1",
-    "@types/chrome": "^0.0.268",
-    "@vitest/coverage-v8": "^4.1.10",
-    "jsdom": "^24.0.0",
-    "typescript": "^5.4.0",
-    "vite": "^8.1.4",
-    "vitest": "^4.1.10"
+    "@types/chrome": "0.3.4",
+    "@vitest/coverage-v8": "4.1.11",
+    "esbuild": "0.28.2",
+    "jsdom": "28.1.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.3",
+    "vitest": "4.1.11"
   }
 }
 ```
