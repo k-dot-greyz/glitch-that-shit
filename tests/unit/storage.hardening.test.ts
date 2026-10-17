@@ -1,6 +1,6 @@
 /** storage.ts hardening: serialized writes, deletion-safe onChange, sanitized reads. */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { storage } from '../../src/storage';
+import { storage, _resetStorageForTest } from '../../src/storage';
 import { DEFAULT_PROFILE, sanitizeProfile } from '../../src/site-profile.schema';
 
 const data = () => (globalThis as any).__storageData as Record<string, unknown>;
@@ -9,6 +9,7 @@ const listeners = () => (globalThis as any).__storageListeners as Array<(c: any,
 describe('storage hardening', () => {
   beforeEach(() => {
     for (const k of Object.keys(data())) delete data()[k];
+    _resetStorageForTest();
   });
 
   it('concurrent setProfile calls with different keys all land', async () => {
