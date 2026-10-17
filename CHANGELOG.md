@@ -9,6 +9,8 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 - Exact pins: `esbuild` 0.28.2, `jsdom` 28.1.0, `@types/chrome` 0.3.4, `vitest` / `@vitest/coverage-v8` 4.1.11, `vite` 8.3.3. TypeScript stays **5.9.3** (TS 7 is a major). jsdom 30 was skipped — it requires Node 22.22.2 / 24.15, which breaks the `^20.19 || >=22.12` floor.
 - `engines.node` is `^20.19.0 || >=22.12.0` (matches `install.sh`; CI reads `.nvmrc` → 24).
 - Dependabot: weekly npm + GitHub Actions, grouped by packager / test-runner / types, **majors frozen**.
+- Repository visibility set to **private**; license changed from MIT to **all rights reserved** (see LICENSE).
+- README and CONTRIBUTING updated to match collaborator-only distribution.
 
 ## [0.3.0-rc.1] — 2026-10-04
 

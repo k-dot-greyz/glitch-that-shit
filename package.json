@@ -27,7 +27,7 @@
     "vitest": "4.1.11"
   },
   "private": true,
-  "license": "MIT",
+  "license": "UNLICENSED",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   }

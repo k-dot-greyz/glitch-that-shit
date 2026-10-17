@@ -2,7 +2,10 @@
 
 Thank you for helping build **glitch-that-shit** — a privacy-first, Manifest V3 browser extension that applies configurable visual effects to unwanted words, phrases, and ad-like content instead of silently removing it.
 
-This repository is public OSS and is also linked from [dev-master](https://github.com/k-dot-greyz/dev-master) as submodule **`dex/09-repos/glitch-that-shit`**.
+This repository is **private** (all rights reserved). Access is by invitation only.
+It is linked from [dev-master](https://github.com/k-dot-greyz/dev-master) as submodule
+**`dex/09-repos/glitch-that-shit`**. Do not redistribute sources or build artifacts
+outside the GlitchWorks / zenOS collaborator boundary without explicit approval.
 
 ---
 

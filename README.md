@@ -91,9 +91,11 @@ Conventional commits (`feat:`, `fix:`, `docs:`, `test:`, `chore:` …).
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+**All Rights Reserved.** This repository is **private**; source is not licensed for
+public use, redistribution, or derivative works without written permission from
+the copyright holder. See [LICENSE](LICENSE).
 
-Copyright (c) 2025 k-dot-greyz (Kaspars Greizis)
+Copyright (c) 2025–2026 k-dot-greyz (Kaspars Greizis)
 
 ## 🐛 Bug Reports & Feature Requests
 
