@@ -76,4 +76,34 @@ describe('options page', () => {
     expect((local()[CONFIG_KEY] as any).filters).toEqual(['sponsored', 'advertisement', 'promoted']);
     vi.unstubAllGlobals();
   });
+
+  it('import applies a validated bundle and rejects hostile JSON (§3.4 / §3.5)', async () => {
+    const input = $<HTMLInputElement>('file-import');
+    const withText = (content: string, name: string) => {
+      const f = new File([content], name, { type: 'application/json' });
+      (f as File & { text: () => Promise<string> }).text = () => Promise.resolve(content);
+      return f;
+    };
+    const hostile = withText(
+      '{"app":"glitch-that-shit","schema":1,"config":{"filters":["/(/"],"effect":"boom"}}',
+      'bad.json',
+    );
+    Object.defineProperty(input, 'files', { value: [hostile], configurable: true });
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    await tick();
+    await tick();
+    expect((local()[CONFIG_KEY] as any).filters).toEqual([]);
+    expect($('status').textContent).toMatch(/Imported/);
+
+    const good = withText(
+      JSON.stringify({ app: 'glitch-that-shit', schema: 1, config: { filters: ['imported'] }, profile: null }),
+      'good.json',
+    );
+    Object.defineProperty(input, 'files', { value: [good], configurable: true });
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    await tick();
+    await tick();
+    expect((local()[CONFIG_KEY] as any).filters).toEqual(['imported']);
+    expect($<HTMLTextAreaElement>('filters').value).toBe('imported');
+  });
 });

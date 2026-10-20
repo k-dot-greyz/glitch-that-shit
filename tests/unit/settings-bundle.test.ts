@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createBundle, parseBundle, MAX_IMPORT_BYTES } from '../../src/settings-bundle';
+import { BUNDLE_SCHEMA, createBundle, parseBundle, MAX_IMPORT_BYTES } from '../../src/settings-bundle';
 import { defaultConfig } from '../../src/glitch-config';
 import { DEFAULT_PROFILE } from '../../src/site-profile.schema';
 
@@ -37,5 +37,47 @@ describe('settings bundle', () => {
     expect(legacy.ok && legacy.config.filters).toEqual(['x']);
     const bare = parseBundle(JSON.stringify({ filters: ['y'] }));
     expect(bare.ok && bare.config.filters).toEqual(['y']);
+  });
+
+  it('rejects future bundle schema (forward-compat ablation)', () => {
+    const r = parseBundle(
+      JSON.stringify({
+        app: 'glitch-that-shit',
+        schema: BUNDLE_SCHEMA + 1,
+        config: defaultConfig(),
+        profile: DEFAULT_PROFILE,
+      }),
+    );
+    expect(r).toEqual({ ok: false, error: 'Unsupported bundle schema 2' });
+  });
+
+  it('does not treat typosquat app + legacy keys as a signed bundle', () => {
+    const r = parseBundle(
+      JSON.stringify({
+        app: 'glitch-that-shit-evil',
+        schema: 1,
+        filterList: ['inject'],
+        effectType: 'redact',
+      }),
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.config.filters).toEqual(['inject']);
+    expect(r.profile).toBeNull();
+  });
+
+  it('sanitizes config when app matches but JSON carries pollution keys', () => {
+    const r = parseBundle(
+      JSON.stringify({
+        app: 'glitch-that-shit',
+        schema: 1,
+        config: JSON.parse('{"filters":["ok"],"__proto__":{"owned":true},"effect":"glitch"}'),
+        profile: null,
+      }),
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.config.filters).toEqual(['ok']);
+    expect(({} as Record<string, unknown>).owned).toBeUndefined();
   });
 });

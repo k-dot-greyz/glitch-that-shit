@@ -73,6 +73,14 @@ describe('background', () => {
     expect((local()[CONFIG_KEY] as any).filters).toContain('crypto bro');
   });
 
+  it('context menu truncates oversized selection before persisting (storage stuffing)', async () => {
+    const long = 'x'.repeat(250);
+    await handler(c.contextMenus.onClicked)({ menuItemId: 'gts-add-selection', selectionText: long }, { id: 1 });
+    const filters = (local()[CONFIG_KEY] as any).filters as string[];
+    expect(filters.some((f) => f.length === 200)).toBe(true);
+    expect(filters.some((f) => f.length > 200)).toBe(false);
+  });
+
   it('hit messages set a per-tab badge; junk is ignored', async () => {
     const onMessage = handler(c.runtime.onMessage);
     onMessage({ type: 'gts:hits', count: 12 }, { tab: { id: 7 } });

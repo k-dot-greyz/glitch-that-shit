@@ -51,4 +51,10 @@ describe('compileMatcher', () => {
     expect(mm.find('foo')).toHaveLength(1);
     expect(mm.find('foo')).toHaveLength(1);
   });
+
+  it('caps per-regex match iterations on greedy patterns', () => {
+    const text = 'a'.repeat(20_000);
+    const mm = m(['/a/'], text);
+    expect(mm.find(text).length).toBeLessThanOrEqual(10_000);
+  });
 });

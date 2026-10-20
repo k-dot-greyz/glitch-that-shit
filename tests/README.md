@@ -12,6 +12,8 @@ tests/
     ├── settings-bundle.test.ts                                    # export/import validation
     ├── content*.test.ts                                           # content script (theme loop + glitch integration)
     ├── background.test.ts, popup*.test.ts, options.test.ts        # extension surfaces
+    ├── messages.test.ts                                           # IPC gate (§3.3)
+    ├── validate-manifest.test.ts                                  # build permission/CSP checks
     └── site-profile.schema.test.ts, theme-registry.test.ts
 ```
 
